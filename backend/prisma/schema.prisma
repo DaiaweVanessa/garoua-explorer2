@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+enum TransportType {
+  MOTO_TAXI
+  BUS
+  AGENCY
+  CAR_RENTAL
+  AIRPORT
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(USER)
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  places    Place[]    @relation("PlaceCreatedBy")
+  favorites Favorite[]
+  likes     Like[]
+  comments  Comment[]
+  ratings   Rating[]
+  events    Event[]    @relation("EventCreatedBy")
+
+  @@map("users")
+}
+
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String
+  slug   String  @unique
+  icon   String?
+  places Place[]
+
+  @@map("categories")
+}
+
+model Place {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?  @db.Text
+  categoryId   Int      @map("category_id")
+  category     Category @relation(fields: [categoryId], references: [id])
+  latitude     Decimal  @db.Decimal(10, 7)
+  longitude    Decimal  @db.Decimal(10, 7)
+  address      String?
+  phone        String?
+  openingHours String?  @map("opening_hours")
+  createdById  Int      @map("created_by")
+  createdBy    User     @relation("PlaceCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  photos        PlacePhoto[]
+  excursionInfo ExcursionInfo?
+  favorites     Favorite[]
+  likes         Like[]
+  comments      Comment[]
+  ratings       Rating[]
+  events        Event[]
+
+  @@index([categoryId])
+  @@index([latitude, longitude])
+  @@map("places")
+}
+
+model PlacePhoto {
+  id       Int    @id @default(autoincrement())
+  placeId  Int    @map("place_id")
+  place    Place  @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  url      String
+  position Int    @default(0)
+
+  @@map("place_photos")
+}
+
+model ExcursionInfo {
+  id                   Int      @id @default(autoincrement())
+  placeId              Int      @unique @map("place_id")
+  place                Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  history              String?  @db.Text
+  distanceKm           Decimal? @map("distance_km") @db.Decimal(6, 2)
+  travelTimeMin        Int?     @map("travel_time_min")
+  recommendedTransport String?  @map("recommended_transport")
+  estimatedCost        String?  @map("estimated_cost")
+  practicalTips        String?  @db.Text @map("practical_tips")
+  bestPeriod           String?  @map("best_period")
+
+  @@map("excursion_infos")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   Int      @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@map("favorites")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   Int      @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@map("likes")
+}
+
+// Commentaires des utilisateurs sur les lieux (rappel pris en compte)
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   Int      @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([placeId])
+  @@map("comments")
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   Int      @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  stars     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("ratings")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  placeId     Int?     @map("place_id")
+  place       Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  createdById Int      @map("created_by")
+  createdBy   User     @relation("EventCreatedBy", fields: [createdById], references: [id])
+
+  @@map("events")
+}
+
+model TransportOption {
+  id          Int           @id @default(autoincrement())
+  type        TransportType
+  name        String
+  description String?       @db.Text
+  basePrice   Decimal       @map("base_price") @db.Decimal(10, 2)
+  priceUnit   String        @map("price_unit")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("transport_options")
+}
+
+// Contenu général sur Garoua (histoire, culture, gastronomie, climat, quartiers).
+// Conçue comme un singleton : une seule ligne (id = 1), gérée via upsert.
+model CityInfo {
+  id         Int      @id @default(autoincrement())
+  history    String?  @db.Text
+  culture    String?  @db.Text
+  gastronomy String?  @db.Text
+  climate    String?  @db.Text
+  districts  String?  @db.Text
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("city_info")
+}

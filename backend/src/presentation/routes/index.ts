@@ -1,0 +1,28 @@
+import { Router } from 'express';
+import { healthRouter } from './health.route';
+import { authRouter } from './auth.route';
+import { categoryRouter } from './category.route';
+import { placeRouter } from './place.route';
+import { favoriteLikeRouter } from './favoriteLike.route';
+import { commentRouter } from './comment.route';
+import { ratingRouter } from './rating.route';
+import { cityInfoRouter } from './cityInfo.route';
+import { transportRouter } from './transport.route';
+import { eventRouter } from './event.route';
+import { userRouter } from './user.route';
+import { adminRouter } from './admin.route';
+
+export const apiRouter = Router();
+
+apiRouter.use(healthRouter);
+apiRouter.use(authRouter);
+apiRouter.use(categoryRouter);
+apiRouter.use(placeRouter);
+apiRouter.use(favoriteLikeRouter);
+apiRouter.use(commentRouter);
+apiRouter.use(ratingRouter);
+apiRouter.use(cityInfoRouter);
+apiRouter.use(transportRouter);
+apiRouter.use(eventRouter);
+apiRouter.use(userRouter);
+apiRouter.use(adminRouter);

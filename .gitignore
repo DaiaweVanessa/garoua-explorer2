@@ -1,0 +1,26 @@
+# Dépendances
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+build/
+**/dist/
+
+# Env
+.env
+.env.local
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+tmp/
+
+# Éditeurs / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# TypeScript build info
+*.tsbuildinfo
