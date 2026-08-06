@@ -13,12 +13,14 @@ import { Comment, ExcursionInfo, Place, RatingSummary } from '@/types';
 import { PlacesMap } from '@/components/PlacesMap';
 import { StarRating } from '@/components/StarRating';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { PhotoUploader } from '@/components/PhotoUploader';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function PlaceDetail() {
   const { id } = useParams<{ id: string }>();
   const placeId = Number(id);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const canManagePhotos = user?.role === 'ADMIN' || user?.role === 'MODERATOR';
 
   const [place, setPlace] = useState<Place | null>(null);
   const [rating, setRating] = useState<RatingSummary>({ average: 0, count: 0 });
@@ -136,10 +138,28 @@ export default function PlaceDetail() {
                 ))}
               </div>
             )}
+            {canManagePhotos && (
+              <div className="mt-4">
+                <PhotoUploader
+                  placeId={place.id}
+                  photos={place.photos}
+                  onPhotosChange={(photos) => setPlace((prev) => (prev ? { ...prev, photos } : prev))}
+                />
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex aspect-[16/9] w-full items-center justify-center rounded-2xl bg-indigo/5">
             <span className="font-display text-6xl text-indigo/20">{place.name.charAt(0)}</span>
+          </div>
+        )}
+        {canManagePhotos && place.photos.length === 0 && (
+          <div className="mt-4">
+            <PhotoUploader
+              placeId={place.id}
+              photos={place.photos}
+              onPhotosChange={(photos) => setPlace((prev) => (prev ? { ...prev, photos } : prev))}
+            />
           </div>
         )}
       </div>
