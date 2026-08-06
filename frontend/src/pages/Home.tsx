@@ -37,9 +37,9 @@ export default function Home() {
   return (
     <div>
       {/* HERO — photo au format portrait d'origine, jamais recadrée */}
-      <section className="bg-sable px-6 pb-14 pt-12 md:pt-16">
+      <section className="bg-sable px-5 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12 md:pt-16">
         <div
-          className="relative mx-auto w-full max-w-md overflow-hidden rounded-[2rem] shadow-card md:max-w-lg"
+          className="relative mx-auto w-full max-w-[280px] overflow-hidden rounded-[1.5rem] shadow-card sm:max-w-sm sm:rounded-[2rem] md:max-w-md"
           style={{ aspectRatio: '720 / 889' }}
         >
           <img
@@ -51,20 +51,20 @@ export default function Home() {
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(ellipse 70% 45% at 50% 32%, rgba(250,246,236,0.9) 0%, rgba(250,246,236,0.55) 45%, rgba(250,246,236,0) 72%)',
+                'radial-gradient(ellipse 82% 66% at 50% 34%, rgba(250,246,236,0.94) 0%, rgba(250,246,236,0.65) 42%, rgba(250,246,236,0) 78%)',
             }}
             aria-hidden="true"
           />
-          <div className="absolute inset-0 flex flex-col items-center px-6 pt-10 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-laterite">
+          <div className="absolute inset-0 flex flex-col items-center px-5 pt-7 text-center sm:px-6 sm:pt-10">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-laterite sm:text-xs">
               Nord-Cameroun · Région du Nord
             </p>
-            <h1 className="mt-4 font-display text-3xl font-semibold uppercase leading-tight tracking-wide text-indigo sm:text-4xl">
+            <h1 className="mt-3 font-display text-2xl font-semibold uppercase leading-tight tracking-wide text-indigo sm:mt-4 sm:text-3xl md:text-4xl">
               Bienvenue sur
               <br />
               Garoua Explorer
             </h1>
-            <p className="mt-4 max-w-xs font-sans text-base text-ink/75">
+            <p className="mt-3 max-w-[210px] font-sans text-sm text-ink/75 sm:mt-4 sm:max-w-xs sm:text-base">
               Votre guide personnel pour découvrir le cœur battant du Nord Cameroun.
             </p>
           </div>
