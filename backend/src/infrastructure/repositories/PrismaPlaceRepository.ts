@@ -83,6 +83,9 @@ export class PrismaPlaceRepository implements PlaceRepository {
         { description: { contains: search } },
       ];
     }
+    if (filters.hasExcursion) {
+      where.excursionInfo = { isNot: null };
+    }
 
     const [places, total] = await Promise.all([
       prisma.place.findMany({
@@ -114,6 +117,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
         address: input.address ?? null,
         phone: input.phone ?? null,
         openingHours: input.openingHours ?? null,
+        videoUrl: input.videoUrl ?? null,
         createdById: input.createdById,
       },
       include: placeInclude,

@@ -7,6 +7,7 @@ export interface PlaceFilters {
   lat?: number;
   lng?: number;
   radius?: number;
+  excursion?: boolean;
   page?: number;
   limit?: number;
 }

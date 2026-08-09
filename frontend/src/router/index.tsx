@@ -9,6 +9,7 @@ import Register from '@/pages/Register';
 import Favorites from '@/pages/Favorites';
 import Profile from '@/pages/Profile';
 import Garoua from '@/pages/Garoua';
+import Excursions from '@/pages/Excursions';
 import Transport from '@/pages/Transport';
 import Events from '@/pages/Events';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: '/lieux', element: <Explore /> },
       { path: '/lieux/:id', element: <PlaceDetail /> },
       { path: '/garoua', element: <Garoua /> },
+      { path: '/excursions', element: <Excursions /> },
       { path: '/transport', element: <Transport /> },
       { path: '/evenements', element: <Events /> },
       { path: '/connexion', element: <Login /> },

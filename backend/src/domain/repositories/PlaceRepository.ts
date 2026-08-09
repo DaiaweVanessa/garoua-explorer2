@@ -6,6 +6,7 @@ export interface PlaceFilters {
   lat?: number;
   lng?: number;
   radiusKm?: number;
+  hasExcursion?: boolean;
   page: number;
   limit: number;
 }
@@ -26,6 +27,7 @@ export interface CreatePlaceInput {
   address?: string | null;
   phone?: string | null;
   openingHours?: string | null;
+  videoUrl?: string | null;
   createdById: number;
 }
 
@@ -38,6 +40,7 @@ export interface UpdatePlaceInput {
   address?: string | null;
   phone?: string | null;
   openingHours?: string | null;
+  videoUrl?: string | null;
 }
 
 export interface PlaceRepository {

@@ -49,6 +49,7 @@ placeRouter.get('/places', validateQuery(listPlacesQuerySchema), async (req, res
       lat: q.lat,
       lng: q.lng,
       radiusKm: q.radius,
+      hasExcursion: q.excursion,
       page: q.page,
       limit: q.limit,
     });

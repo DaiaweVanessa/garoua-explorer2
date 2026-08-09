@@ -20,11 +20,12 @@ export function Footer() {
               <li><Link to="/lieux?category=sites-touristiques" className="hover:text-savane">Sites touristiques</Link></li>
               <li><Link to="/lieux?category=hotels" className="hover:text-savane">Hôtels</Link></li>
               <li><Link to="/lieux?category=restaurants" className="hover:text-savane">Restaurants</Link></li>
+              <li><Link to="/excursions" className="hover:text-savane">Excursions</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-sans text-sm font-bold uppercase tracking-wide text-savane">Autour de Garoua</h4>
+            <h4 className="font-sans text-sm font-bold uppercase tracking-wide text-savane">À propos de la ville</h4>
             <ul className="mt-4 space-y-2 font-sans text-sm text-sable/80">
               <li><Link to="/garoua" className="hover:text-savane">Histoire &amp; culture</Link></li>
               <li><Link to="/transport" className="hover:text-savane">Transport</Link></li>
@@ -42,7 +43,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-sable/10 pt-6 font-sans text-xs text-sable/50">
-          © {new Date().getFullYear()} Garoua Explorer. Projet étudiant — CS4122.
+          © {new Date().getFullYear()} Garoua Explorer.
         </div>
       </div>
     </footer>

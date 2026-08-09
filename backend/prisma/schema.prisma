@@ -62,6 +62,7 @@ model Place {
   address      String?
   phone        String?
   openingHours String?  @map("opening_hours")
+  videoUrl     String?  @map("video_url")
   createdById  Int      @map("created_by")
   createdBy    User     @relation("PlaceCreatedBy", fields: [createdById], references: [id])
   createdAt    DateTime @default(now()) @map("created_at")
@@ -78,6 +79,7 @@ model Place {
   @@index([latitude, longitude])
   @@map("places")
 }
+
 
 model PlacePhoto {
   id       Int    @id @default(autoincrement())
