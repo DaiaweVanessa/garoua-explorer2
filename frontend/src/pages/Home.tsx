@@ -10,6 +10,10 @@ const categories = [
   { slug: 'lieux-religieux', label: 'Lieux religieux', icon: '🕌' },
 ];
 
+// Remplace cet ID par celui de la vraie vidéo YouTube une fois disponible
+// (dans l'URL youtube.com/watch?v=XXXXXXXXXXX, XXXXXXXXXXX est l'ID)
+const PRESENTATION_VIDEO_ID = '';
+
 const features = [
   {
     title: 'Recherche géolocalisée',
@@ -100,6 +104,29 @@ export default function Home() {
         </div>
       </section>
 
+      {/* VIDÉO DE PRÉSENTATION */}
+      <section className="mx-auto max-w-4xl px-6 py-4">
+        <h2 className="text-center font-display text-2xl font-semibold text-indigo sm:text-3xl">
+          Garoua en vidéo
+        </h2>
+        <div className="mx-auto mt-6 aspect-video w-full overflow-hidden rounded-2xl shadow-card">
+          {PRESENTATION_VIDEO_ID ? (
+            <iframe
+              className="h-full w-full"
+              src={`https://www.youtube.com/embed/${PRESENTATION_VIDEO_ID}`}
+              title="Présentation de Garoua Explorer"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-indigo/5 text-center">
+              <span className="text-3xl">🎬</span>
+              <p className="font-sans text-sm text-indigo/50">Vidéo de présentation bientôt disponible</p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* FEATURES */}
       <section className="mx-auto max-w-6xl px-6 py-10">
         <h2 className="font-display text-3xl font-semibold text-indigo">
@@ -124,7 +151,7 @@ export default function Home() {
           <p className="mx-auto mt-4 max-w-lg font-sans text-sable/90">
             Gorges de Kola, Parc national de la Bénoué, Lac de Lagdo — on te dit exactement comment y aller.
           </p>
-          <Link to="/garoua" className="btn-secondary !border-sable !text-sable hover:!bg-sable hover:!text-laterite mt-8 inline-flex">
+          <Link to="/excursions" className="btn-secondary !border-sable !text-sable hover:!bg-sable hover:!text-laterite mt-8 inline-flex">
             Voir les excursions
           </Link>
         </div>
