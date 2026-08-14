@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchTransportOptions } from '@/services/content';
 import { TransportOption, TransportType } from '@/types';
+import { WeatherForecast } from '@/components/WeatherForecast';
 
 const typeLabels: Record<TransportType, { label: string; icon: string }> = {
   MOTO_TAXI: { label: 'Moto-taxi', icon: '🏍️' },
@@ -27,6 +28,10 @@ export default function Transport() {
       <p className="mt-4 font-sans text-ink/70">
         Les options pour te déplacer à Garoua et dans les environs, avec des prix indicatifs.
       </p>
+
+      <div className="mt-6">
+        <WeatherForecast />
+      </div>
 
       {loading && <p className="mt-10 font-sans text-sm text-ink/50">Chargement...</p>}
 

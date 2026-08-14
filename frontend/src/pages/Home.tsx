@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { WeatherCard } from '@/components/WeatherCard';
 
 const categories = [
   { slug: 'sites-touristiques', label: 'Sites touristiques', icon: '🏛️' },
@@ -73,6 +74,11 @@ export default function Home() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* MÉTÉO */}
+      <section className="px-6 pt-8">
+        <WeatherCard />
       </section>
 
       {/* RECHERCHE RAPIDE */}
