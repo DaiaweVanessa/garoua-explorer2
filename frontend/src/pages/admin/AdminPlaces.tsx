@@ -22,6 +22,7 @@ const emptyPlace: PlaceInput = {
   address: '',
   phone: '',
   openingHours: '',
+  videoUrl: '',
 };
 
 export default function AdminPlaces() {
@@ -43,7 +44,7 @@ export default function AdminPlaces() {
   useEffect(reload, []);
 
   async function handleDelete(id: number) {
-    if (!confirm('Supprimer ce lieu ? Cette action est irréversible.')) return;
+    if (!confirm('Supprimer ce lieu ? Cette action est irreversible.')) return;
     await deletePlace(id);
     reload();
   }
@@ -150,6 +151,7 @@ function PlaceForm({
           address: place.address ?? '',
           phone: place.phone ?? '',
           openingHours: place.openingHours ?? '',
+          videoUrl: place.videoUrl ?? '',
         }
       : emptyPlace
   );
@@ -159,7 +161,7 @@ function PlaceForm({
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!form.categoryId) {
-      setError('Choisis une catégorie.');
+      setError('Choisis une categorie.');
       return;
     }
     setSubmitting(true);
@@ -169,7 +171,7 @@ function PlaceForm({
       else await createPlace(form);
       onSaved();
     } catch {
-      setError('Impossible d\'enregistrer le lieu.');
+      setError("Impossible d'enregistrer le lieu.");
     } finally {
       setSubmitting(false);
     }
@@ -186,7 +188,7 @@ function PlaceForm({
             className="input"
           />
         </Field>
-        <Field label="Catégorie">
+        <Field label="Categorie">
           <select
             required
             value={form.categoryId || ''}
@@ -246,7 +248,7 @@ function PlaceForm({
       </Field>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Téléphone">
+        <Field label="Telephone">
           <input
             value={form.phone ?? ''}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -262,6 +264,15 @@ function PlaceForm({
           />
         </Field>
       </div>
+
+      <Field label="Video YouTube (URL ou ID, optionnel)">
+        <input
+          value={form.videoUrl ?? ''}
+          onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+          className="input"
+          placeholder="https://youtube.com/watch?v=..."
+        />
+      </Field>
 
       {error && <p className="font-sans text-sm text-laterite">{error}</p>}
 
@@ -370,7 +381,7 @@ function ExcursionManager({ placeId }: { placeId: number }) {
   return (
     <form onSubmit={handleSave} className="mt-4 border-t border-indigo/10 pt-4">
       <p className="font-sans text-sm font-semibold text-indigo">
-        Infos excursion <span className="font-normal text-ink/40">(si c'est un site à visiter hors ville)</span>
+        Infos excursion <span className="font-normal text-ink/40">(si c'est un site a visiter hors ville)</span>
       </p>
 
       <div className="mt-2 space-y-3">
@@ -398,19 +409,19 @@ function ExcursionManager({ placeId }: { placeId: number }) {
             className="input"
           />
           <input
-            placeholder="Coût estimé"
+            placeholder="Cout estime"
             value={info.estimatedCost ?? ''}
             onChange={(e) => setInfo({ ...info, estimatedCost: e.target.value })}
             className="input"
           />
           <input
-            placeholder="Transport conseillé"
+            placeholder="Transport conseille"
             value={info.recommendedTransport ?? ''}
             onChange={(e) => setInfo({ ...info, recommendedTransport: e.target.value })}
             className="input"
           />
           <input
-            placeholder="Meilleure période"
+            placeholder="Meilleure periode"
             value={info.bestPeriod ?? ''}
             onChange={(e) => setInfo({ ...info, bestPeriod: e.target.value })}
             className="input"
@@ -429,7 +440,7 @@ function ExcursionManager({ placeId }: { placeId: number }) {
         <button type="submit" disabled={submitting} className="btn-secondary !px-4 !py-2 text-sm disabled:opacity-60">
           {submitting ? 'Enregistrement...' : "Enregistrer l'excursion"}
         </button>
-        {saved && <span className="font-sans text-xs text-benoue-dark">Enregistré ✓</span>}
+        {saved && <span className="font-sans text-xs text-benoue-dark">Enregistre OK</span>}
       </div>
     </form>
   );

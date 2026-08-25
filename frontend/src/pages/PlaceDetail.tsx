@@ -1,456 +1,441 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { fetchCategories, fetchPlaces } from '@/services/places';
+import { Link, useParams } from 'react-router-dom';
 import {
-  addPlacePhoto,
-  createPlace,
-  deletePlace,
-  deletePlacePhoto,
-  PlaceInput,
-  updatePlace,
-  upsertExcursionInfo,
-  ExcursionInfoInput,
-} from '@/services/admin';
-import { fetchExcursionInfo } from '@/services/places';
-import { Category, ExcursionInfo, Place } from '@/types';
+  addComment,
+  fetchComments,
+  fetchExcursionInfo,
+  fetchFavorites,
+  fetchPlace,
+  fetchRatingSummary,
+  ratePlace,
+} from '@/services/places';
+import { Comment, ExcursionInfo, Place, RatingSummary } from '@/types';
+import { PlacesMap } from '@/components/PlacesMap';
+import { StarRating } from '@/components/StarRating';
+import { FavoriteButton } from '@/components/FavoriteButton';
+import { PhotoUploader } from '@/components/PhotoUploader';
+import { useAuth } from '@/hooks/useAuth';
+import { getYouTubeEmbedUrl } from '@/lib/youtube';
 
-const emptyPlace: PlaceInput = {
-  name: '',
-  description: '',
-  categoryId: 0,
-  latitude: 9.3017,
-  longitude: 13.3921,
-  address: '',
-  phone: '',
-  openingHours: '',
-  videoUrl: '',
-};
+export default function PlaceDetail() {
+  const { id } = useParams<{ id: string }>();
+  const placeId = Number(id);
+  const { isAuthenticated, user } = useAuth();
+  const canManagePhotos = user?.role === 'ADMIN' || user?.role === 'MODERATOR';
 
-export default function AdminPlaces() {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [place, setPlace] = useState<Place | null>(null);
+  const [rating, setRating] = useState<RatingSummary>({ average: 0, count: 0 });
+  const [excursion, setExcursion] = useState<ExcursionInfo | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [activePhoto, setActivePhoto] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | 'new' | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  function reload() {
+  useEffect(() => {
+    if (!Number.isFinite(placeId)) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
     setLoading(true);
-    Promise.all([fetchPlaces({ limit: 100 }), fetchCategories()])
-      .then(([placesRes, cats]) => {
-        setPlaces(placesRes.items);
-        setCategories(cats);
+    setNotFound(false);
+    setActivePhoto(0);
+
+    fetchPlace(placeId)
+      .then((data) => {
+        if (cancelled) return;
+        setPlace(data);
       })
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setNotFound(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    fetchRatingSummary(placeId)
+      .then((data) => !cancelled && setRating(data))
+      .catch(() => {});
+
+    fetchExcursionInfo(placeId)
+      .then((data) => !cancelled && setExcursion(data))
+      .catch(() => !cancelled && setExcursion(null));
+
+    fetchComments(placeId)
+      .then((res) => !cancelled && setComments(res.items))
+      .catch(() => {});
+
+    if (isAuthenticated) {
+      fetchFavorites()
+        .then((favs) => !cancelled && setIsFavorited(favs.some((f) => f.id === placeId)))
+        .catch(() => {});
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [placeId, isAuthenticated]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl px-6 py-24 text-center font-sans text-sm text-ink/50">
+        Chargement du lieu...
+      </div>
+    );
   }
 
-  useEffect(reload, []);
-
-  async function handleDelete(id: number) {
-    if (!confirm('Supprimer ce lieu ? Cette action est irréversible.')) return;
-    await deletePlace(id);
-    reload();
+  if (notFound || !place) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-32 text-center">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-laterite">Erreur 404</p>
+        <h1 className="mt-4 font-display text-4xl font-semibold text-indigo">
+          Ce lieu est introuvable
+        </h1>
+        <p className="mt-4 font-sans text-ink/60">
+          Il a peut-être été retiré, ou l'adresse n'est pas correcte.
+        </p>
+        <Link to="/lieux" className="btn-primary mt-8 inline-flex">
+          Retour à l'exploration
+        </Link>
+      </div>
+    );
   }
+
+  const embedUrl = getYouTubeEmbedUrl(place.videoUrl);
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-indigo">Lieux</h1>
-        <button
-          onClick={() => setEditingId(editingId === 'new' ? null : 'new')}
-          className="btn-primary !px-4 !py-2 text-sm"
-        >
-          {editingId === 'new' ? 'Annuler' : '+ Ajouter un lieu'}
-        </button>
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <nav className="font-sans text-sm text-ink/50">
+        <Link to="/lieux" className="hover:text-laterite">
+          Explorer
+        </Link>{' '}
+        / <span className="text-ink/70">{place.name}</span>
+      </nav>
+
+      {/* GALERIE */}
+      <div className="mt-6">
+        {place.photos.length > 0 ? (
+          <div>
+            <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-sable-dark">
+              <img
+                src={place.photos[activePhoto].url}
+                alt={place.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            {place.photos.length > 1 && (
+              <div className="mt-3 flex gap-2 overflow-x-auto">
+                {place.photos.map((photo, i) => (
+                  <button
+                    key={photo.id}
+                    onClick={() => setActivePhoto(i)}
+                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-colors ${
+                      i === activePhoto ? 'border-laterite' : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            {canManagePhotos && (
+              <div className="mt-4">
+                <PhotoUploader
+                  placeId={place.id}
+                  photos={place.photos}
+                  onPhotosChange={(photos) => setPlace((prev) => (prev ? { ...prev, photos } : prev))}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex aspect-[16/9] w-full items-center justify-center rounded-2xl bg-indigo/5">
+            <span className="font-display text-6xl text-indigo/20">{place.name.charAt(0)}</span>
+          </div>
+        )}
+        {canManagePhotos && place.photos.length === 0 && (
+          <div className="mt-4">
+            <PhotoUploader
+              placeId={place.id}
+              photos={place.photos}
+              onPhotosChange={(photos) => setPlace((prev) => (prev ? { ...prev, photos } : prev))}
+            />
+          </div>
+        )}
       </div>
 
-      {editingId === 'new' && (
-        <div className="mt-4">
-          <PlaceForm
-            categories={categories}
-            onCancel={() => setEditingId(null)}
-            onSaved={() => {
-              setEditingId(null);
-              reload();
-            }}
-          />
-        </div>
-      )}
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+        {/* COLONNE PRINCIPALE */}
+        <div>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="font-mono text-xs uppercase tracking-wide text-laterite">
+                {place.category.name}
+              </span>
+              <h1 className="mt-2 font-display text-3xl font-semibold text-indigo md:text-4xl">
+                {place.name}
+              </h1>
+            </div>
+            {isAuthenticated && (
+              <FavoriteButton placeId={place.id} initialFavorited={isFavorited} />
+            )}
+          </div>
 
-      {loading ? (
-        <p className="mt-6 font-sans text-sm text-ink/50">Chargement...</p>
-      ) : (
-        <div className="mt-6 space-y-3">
-          {places.length === 0 && (
-            <p className="font-sans text-sm text-ink/50">Aucun lieu pour l'instant.</p>
+          <div className="mt-3">
+            <StarRating average={rating.average} count={rating.count} />
+          </div>
+
+          {place.description && (
+            <p className="mt-6 max-w-2xl font-sans leading-relaxed text-ink/80">
+              {place.description}
+            </p>
           )}
-          {places.map((place) => (
-            <div key={place.id} className="card p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <span className="font-mono text-[11px] uppercase tracking-wide text-laterite">
-                    {place.category.name}
-                  </span>
-                  <h2 className="font-display text-lg font-semibold text-indigo">{place.name}</h2>
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <button
-                    onClick={() => setEditingId(editingId === place.id ? null : place.id)}
-                    className="rounded-full border border-indigo/15 px-4 py-1.5 font-sans text-xs font-semibold text-indigo hover:border-indigo"
-                  >
-                    {editingId === place.id ? 'Fermer' : 'Modifier'}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(place.id)}
-                    className="rounded-full border border-laterite/30 px-4 py-1.5 font-sans text-xs font-semibold text-laterite hover:bg-laterite/10"
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              </div>
 
-              {editingId === place.id && (
-                <div className="mt-4 border-t border-indigo/10 pt-4">
-                  <PlaceForm
-                    categories={categories}
-                    place={place}
-                    onCancel={() => setEditingId(null)}
-                    onSaved={() => {
-                      setEditingId(null);
-                      reload();
-                    }}
-                  />
-                  <PhotoManager place={place} onChange={reload} />
-                  <ExcursionManager placeId={place.id} />
-                </div>
+          {embedUrl && (
+            <div className="mt-8">
+              <h2 className="font-display text-xl font-semibold text-indigo">Vidéo</h2>
+              <div className="mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-black">
+                <iframe
+                  src={embedUrl}
+                  title={`Vidéo de ${place.name}`}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+
+          {excursion && (
+            <div className="mt-8 rounded-2xl border border-benoue/20 bg-benoue/5 p-6">
+              <h2 className="font-display text-xl font-semibold text-benoue-dark">
+                Excursion : ce qu'il faut savoir
+              </h2>
+              {excursion.history && (
+                <p className="mt-3 font-sans text-sm leading-relaxed text-ink/70">
+                  {excursion.history}
+                </p>
+              )}
+              <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {excursion.distanceKm !== null && (
+                  <InfoStat label="Distance" value={`${excursion.distanceKm} km`} />
+                )}
+                {excursion.travelTimeMin !== null && (
+                  <InfoStat label="Trajet" value={`${excursion.travelTimeMin} min`} />
+                )}
+                {excursion.estimatedCost && (
+                  <InfoStat label="Coût estimé" value={excursion.estimatedCost} />
+                )}
+                {excursion.recommendedTransport && (
+                  <InfoStat label="Transport conseillé" value={excursion.recommendedTransport} />
+                )}
+                {excursion.bestPeriod && (
+                  <InfoStat label="Meilleure période" value={excursion.bestPeriod} />
+                )}
+              </dl>
+              {excursion.practicalTips && (
+                <p className="mt-5 rounded-xl bg-white/60 p-4 font-sans text-sm text-ink/70">
+                  💡 {excursion.practicalTips}
+                </p>
               )}
             </div>
-          ))}
+          )}
+
+          {/* AVIS */}
+          <div className="mt-10">
+            <h2 className="font-display text-xl font-semibold text-indigo">
+              Avis {comments.length > 0 && `(${comments.length})`}
+            </h2>
+
+            {isAuthenticated ? (
+              <ReviewForm
+                placeId={place.id}
+                onRated={setRating}
+                onCommented={(c) => setComments((prev) => [c, ...prev])}
+              />
+            ) : (
+              <div className="mt-4 rounded-2xl border border-dashed border-indigo/15 p-5 font-sans text-sm text-ink/60">
+                <Link to="/connexion" className="font-semibold text-laterite hover:underline">
+                  Connecte-toi
+                </Link>{' '}
+                pour laisser un avis ou une note sur ce lieu.
+              </div>
+            )}
+
+            <div className="mt-6 space-y-5">
+              {comments.length === 0 && (
+                <p className="font-sans text-sm text-ink/50">
+                  Aucun avis pour l'instant — sois le premier à en laisser un.
+                </p>
+              )}
+              {comments.map((comment) => (
+                <div key={comment.id} className="border-b border-indigo/10 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-full bg-indigo font-display text-sm text-sable">
+                      {comment.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-sans text-sm font-semibold text-ink">
+                        {comment.user.name}
+                      </p>
+                      <p className="font-mono text-xs text-ink/40">
+                        {new Date(comment.createdAt).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-3 font-sans text-sm leading-relaxed text-ink/75">
+                    {comment.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* COLONNE LATÉRALE : INFOS PRATIQUES + CARTE */}
+        <div className="space-y-6">
+          <div className="card space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold text-indigo">Infos pratiques</h2>
+            {place.address && <PracticalInfo label="Adresse" value={place.address} />}
+            {place.phone && <PracticalInfo label="Téléphone" value={place.phone} />}
+            {place.openingHours && (
+              <PracticalInfo label="Horaires" value={place.openingHours} />
+            )}
+            {!place.address && !place.phone && !place.openingHours && (
+              <p className="font-sans text-sm text-ink/50">
+                Aucune information pratique renseignée pour ce lieu.
+              </p>
+            )}
+          </div>
+
+          <div className="h-72 overflow-hidden rounded-2xl">
+            <PlacesMap places={[place]} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function PlaceForm({
-  categories,
-  place,
-  onSaved,
-  onCancel,
+function ReviewForm({
+  placeId,
+  onRated,
+  onCommented,
 }: {
-  categories: Category[];
-  place?: Place;
-  onSaved: () => void;
-  onCancel: () => void;
+  placeId: number;
+  onRated: (summary: RatingSummary) => void;
+  onCommented: (comment: Comment) => void;
 }) {
-  const [form, setForm] = useState<PlaceInput>(
-    place
-      ? {
-          name: place.name,
-          description: place.description ?? '',
-          categoryId: place.categoryId,
-          latitude: place.latitude,
-          longitude: place.longitude,
-          address: place.address ?? '',
-          phone: place.phone ?? '',
-          openingHours: place.openingHours ?? '',
-          videoUrl: place.videoUrl ?? '',
-        }
-      : emptyPlace
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [stars, setStars] = useState(0);
+  const [hoverStars, setHoverStars] = useState(0);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingDone, setRatingDone] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!form.categoryId) {
-      setError('Choisis une catégorie.');
-      return;
+  const [content, setContent] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submitRating(value: number) {
+    setStars(value);
+    setRatingSubmitting(true);
+    try {
+      const summary = await ratePlace(placeId, value);
+      onRated(summary);
+      setRatingDone(true);
+    } catch {
+      setError("Impossible d'enregistrer la note.");
+    } finally {
+      setRatingSubmitting(false);
     }
-    setSubmitting(true);
+  }
+
+  async function handleCommentSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!content.trim()) return;
+    setCommentSubmitting(true);
     setError(null);
     try {
-      if (place) await updatePlace(place.id, form);
-      else await createPlace(form);
-      onSaved();
+      const comment = await addComment(placeId, content.trim());
+      onCommented(comment);
+      setContent('');
     } catch {
-      setError('Impossible d\'enregistrer le lieu.');
+      setError("Impossible d'envoyer l'avis.");
     } finally {
-      setSubmitting(false);
+      setCommentSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card space-y-3 p-5">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Nom">
-          <input
-            required
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="input"
-          />
-        </Field>
-        <Field label="Catégorie">
-          <select
-            required
-            value={form.categoryId || ''}
-            onChange={(e) => setForm({ ...form, categoryId: Number(e.target.value) })}
-            className="input"
-          >
-            <option value="" disabled>
-              Choisir...
-            </option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-
-      <Field label="Description">
-        <textarea
-          rows={3}
-          value={form.description ?? ''}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="input"
-        />
-      </Field>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Latitude">
-          <input
-            type="number"
-            step="any"
-            required
-            value={form.latitude}
-            onChange={(e) => setForm({ ...form, latitude: Number(e.target.value) })}
-            className="input"
-          />
-        </Field>
-        <Field label="Longitude">
-          <input
-            type="number"
-            step="any"
-            required
-            value={form.longitude}
-            onChange={(e) => setForm({ ...form, longitude: Number(e.target.value) })}
-            className="input"
-          />
-        </Field>
-      </div>
-
-      <Field label="Adresse">
-        <input
-          value={form.address ?? ''}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
-          className="input"
-        />
-      </Field>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Téléphone">
-          <input
-            value={form.phone ?? ''}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="input"
-          />
-        </Field>
-        <Field label="Horaires">
-          <input
-            value={form.openingHours ?? ''}
-            onChange={(e) => setForm({ ...form, openingHours: e.target.value })}
-            className="input"
-            placeholder="ex: Tous les jours 8h-20h"
-          />
-        </Field>
-      </div>
-
-      <Field label="Vidéo YouTube (URL ou ID, optionnel)">
-        <input
-          value={form.videoUrl ?? ''}
-          onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
-          className="input"
-          placeholder="https://youtube.com/watch?v=..."
-        />
-      </Field>
-
-      {error && <p className="font-sans text-sm text-laterite">{error}</p>}
-
-      <div className="flex gap-2">
-        <button type="submit" disabled={submitting} className="btn-primary !px-5 !py-2 text-sm disabled:opacity-60">
-          {submitting ? 'Enregistrement...' : 'Enregistrer'}
-        </button>
-        <button type="button" onClick={onCancel} className="font-sans text-sm text-ink/50 hover:text-ink">
-          Annuler
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function PhotoManager({ place, onChange }: { place: Place; onChange: () => void }) {
-  const [url, setUrl] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleAdd(e: FormEvent) {
-    e.preventDefault();
-    if (!url.trim()) return;
-    setSubmitting(true);
-    try {
-      await addPlacePhoto(place.id, url.trim(), place.photos.length);
-      setUrl('');
-      onChange();
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function handleRemove(photoId: number) {
-    await deletePlacePhoto(photoId);
-    onChange();
-  }
-
-  return (
-    <div className="mt-4 border-t border-indigo/10 pt-4">
-      <p className="font-sans text-sm font-semibold text-indigo">Photos</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {place.photos.map((photo) => (
-          <div key={photo.id} className="group relative h-16 w-16 overflow-hidden rounded-xl">
-            <img src={photo.url} alt="" className="h-full w-full object-cover" />
+    <div className="mt-4 rounded-2xl border border-indigo/10 bg-white p-5">
+      <p className="font-sans text-sm font-semibold text-indigo">Ta note</p>
+      <div className="mt-1.5 flex items-center gap-2">
+        <div className="flex text-2xl">
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
-              onClick={() => handleRemove(photo.id)}
-              className="absolute inset-0 hidden items-center justify-center bg-indigo/70 font-sans text-xs font-bold text-sable group-hover:flex"
+              key={n}
+              type="button"
+              disabled={ratingSubmitting}
+              onMouseEnter={() => setHoverStars(n)}
+              onMouseLeave={() => setHoverStars(0)}
+              onClick={() => submitRating(n)}
+              className="text-savane-dark transition-transform hover:scale-110 disabled:opacity-60"
+              aria-label={`${n} étoile${n > 1 ? 's' : ''}`}
             >
-              Retirer
+              {n <= (hoverStars || stars) ? '★' : '☆'}
             </button>
-          </div>
-        ))}
+          ))}
+        </div>
+        {ratingDone && <span className="font-sans text-xs text-benoue-dark">Note enregistrée ✓</span>}
       </div>
-      <form onSubmit={handleAdd} className="mt-3 flex gap-2">
-        <input
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://... (URL de la photo)"
-          className="input flex-1"
+
+      <form onSubmit={handleCommentSubmit} className="mt-5">
+        <label htmlFor="review" className="font-sans text-sm font-semibold text-indigo">
+          Ton avis
+        </label>
+        <textarea
+          id="review"
+          rows={3}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Qu'as-tu pensé de ce lieu ?"
+          className="mt-1.5 w-full rounded-xl border border-indigo/15 bg-sable-light px-4 py-3 font-sans text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-laterite"
         />
-        <button type="submit" disabled={submitting} className="btn-secondary !px-4 !py-2 text-sm disabled:opacity-60">
-          Ajouter
+        {error && <p className="mt-2 font-sans text-sm text-laterite">{error}</p>}
+        <button
+          type="submit"
+          disabled={commentSubmitting || !content.trim()}
+          className="btn-primary mt-3 !px-5 !py-2.5 text-sm disabled:opacity-60"
+        >
+          {commentSubmitting ? 'Envoi...' : 'Publier mon avis'}
         </button>
       </form>
     </div>
   );
 }
 
-function ExcursionManager({ placeId }: { placeId: number }) {
-  const [info, setInfo] = useState<ExcursionInfoInput>({});
-  const [loaded, setLoaded] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    fetchExcursionInfo(placeId).then((data: ExcursionInfo | null) => {
-      if (data) {
-        setInfo({
-          history: data.history,
-          distanceKm: data.distanceKm,
-          travelTimeMin: data.travelTimeMin,
-          recommendedTransport: data.recommendedTransport,
-          estimatedCost: data.estimatedCost,
-          practicalTips: data.practicalTips,
-          bestPeriod: data.bestPeriod,
-        });
-      }
-      setLoaded(true);
-    });
-  }, [placeId]);
-
-  async function handleSave(e: FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    setSaved(false);
-    try {
-      await upsertExcursionInfo(placeId, info);
-      setSaved(true);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  if (!loaded) return null;
-
+function InfoStat({ label, value }: { label: string; value: string }) {
   return (
-    <form onSubmit={handleSave} className="mt-4 border-t border-indigo/10 pt-4">
-      <p className="font-sans text-sm font-semibold text-indigo">
-        Infos excursion <span className="font-normal text-ink/40">(si c'est un site à visiter hors ville)</span>
-      </p>
-
-      <div className="mt-2 space-y-3">
-        <textarea
-          rows={2}
-          placeholder="Histoire du lieu"
-          value={info.history ?? ''}
-          onChange={(e) => setInfo({ ...info, history: e.target.value })}
-          className="input"
-        />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <input
-            type="number"
-            step="any"
-            placeholder="Distance (km)"
-            value={info.distanceKm ?? ''}
-            onChange={(e) => setInfo({ ...info, distanceKm: e.target.value ? Number(e.target.value) : null })}
-            className="input"
-          />
-          <input
-            type="number"
-            placeholder="Trajet (min)"
-            value={info.travelTimeMin ?? ''}
-            onChange={(e) => setInfo({ ...info, travelTimeMin: e.target.value ? Number(e.target.value) : null })}
-            className="input"
-          />
-          <input
-            placeholder="Coût estimé"
-            value={info.estimatedCost ?? ''}
-            onChange={(e) => setInfo({ ...info, estimatedCost: e.target.value })}
-            className="input"
-          />
-          <input
-            placeholder="Transport conseillé"
-            value={info.recommendedTransport ?? ''}
-            onChange={(e) => setInfo({ ...info, recommendedTransport: e.target.value })}
-            className="input"
-          />
-          <input
-            placeholder="Meilleure période"
-            value={info.bestPeriod ?? ''}
-            onChange={(e) => setInfo({ ...info, bestPeriod: e.target.value })}
-            className="input"
-          />
-        </div>
-        <textarea
-          rows={2}
-          placeholder="Conseils pratiques"
-          value={info.practicalTips ?? ''}
-          onChange={(e) => setInfo({ ...info, practicalTips: e.target.value })}
-          className="input"
-        />
-      </div>
-
-      <div className="mt-3 flex items-center gap-3">
-        <button type="submit" disabled={submitting} className="btn-secondary !px-4 !py-2 text-sm disabled:opacity-60">
-          {submitting ? 'Enregistrement...' : "Enregistrer l'excursion"}
-        </button>
-        {saved && <span className="font-sans text-xs text-benoue-dark">Enregistré ✓</span>}
-      </div>
-    </form>
+    <div>
+      <dt className="font-mono text-[11px] uppercase tracking-wide text-benoue-dark/70">
+        {label}
+      </dt>
+      <dd className="mt-1 font-sans text-sm font-semibold text-ink">{value}</dd>
+    </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function PracticalInfo({ label, value }: { label: string; value: string }) {
   return (
-    <label className="block">
-      <span className="font-sans text-xs font-semibold uppercase tracking-wide text-indigo/60">{label}</span>
-      <div className="mt-1">{children}</div>
-    </label>
+    <div>
+      <p className="font-mono text-[11px] uppercase tracking-wide text-indigo/50">{label}</p>
+      <p className="mt-0.5 font-sans text-sm text-ink/80">{value}</p>
+    </div>
   );
 }
