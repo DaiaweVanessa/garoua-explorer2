@@ -1,32 +1,32 @@
-import { FormEvent, useState } from 'react';
+﻿import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { WeatherCard } from '@/components/WeatherCard';
 
 const categories = [
-  { slug: 'sites-touristiques', label: 'Sites touristiques', icon: '🏛️' },
-  { slug: 'hotels', label: 'Hôtels', icon: '🏨' },
-  { slug: 'restaurants', label: 'Restaurants', icon: '🍲' },
-  { slug: 'marches', label: 'Marchés', icon: '🧺' },
-  { slug: 'musees', label: 'Musées', icon: '🖼️' },
-  { slug: 'lieux-religieux', label: 'Lieux religieux', icon: '🕌' },
+  { slug: 'sites-touristiques', label: 'Sites touristiques', icon: 'ðŸ›ï¸' },
+  { slug: 'hotels', label: 'HÃ´tels', icon: 'ðŸ¨' },
+  { slug: 'restaurants', label: 'Restaurants', icon: 'ðŸ²' },
+  { slug: 'marches', label: 'MarchÃ©s', icon: 'ðŸ§º' },
+  { slug: 'musees', label: 'MusÃ©es', icon: 'ðŸ–¼ï¸' },
+  { slug: 'lieux-religieux', label: 'Lieux religieux', icon: 'ðŸ•Œ' },
 ];
 
-// Remplace cet ID par celui de la vraie vidéo YouTube une fois disponible
+// Remplace cet ID par celui de la vraie vidÃ©o YouTube une fois disponible
 // (dans l'URL youtube.com/watch?v=XXXXXXXXXXX, XXXXXXXXXXX est l'ID)
-const PRESENTATION_VIDEO_ID = '';
+const PRESENTATION_VIDEO_ID = 'dzpX7DaGwP0';
 
 const features = [
   {
-    title: 'Recherche géolocalisée',
-    text: 'Trouve ce qui est vraiment proche de toi, avec la distance exacte calculée en temps réel.',
+    title: 'Recherche gÃ©olocalisÃ©e',
+    text: 'Trouve ce qui est vraiment proche de toi, avec la distance exacte calculÃ©e en temps rÃ©el.',
   },
   {
-    title: 'Avis vérifiés',
-    text: 'Des avis et notes laissés par de vrais visiteurs de Garoua, pas des recommandations génériques.',
+    title: 'Avis vÃ©rifiÃ©s',
+    text: 'Des avis et notes laissÃ©s par de vrais visiteurs de Garoua, pas des recommandations gÃ©nÃ©riques.',
   },
   {
-    title: 'Excursions organisées',
-    text: 'Gorges de Kola, Parc de la Bénoué : distance, coût, meilleure période, tout est indiqué.',
+    title: 'Excursions organisÃ©es',
+    text: 'Gorges de Kola, Parc de la BÃ©nouÃ© : distance, coÃ»t, meilleure pÃ©riode, tout est indiquÃ©.',
   },
 ];
 
@@ -41,7 +41,7 @@ export default function Home() {
 
   return (
     <div>
-      {/* HERO — photo au format portrait d'origine, jamais recadrée */}
+      {/* HERO â€” photo au format portrait d'origine, jamais recadrÃ©e */}
       <section className="bg-sable px-5 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12 md:pt-16">
         <div
           className="relative mx-auto w-full max-w-[280px] overflow-hidden rounded-[1.5rem] shadow-card sm:max-w-sm sm:rounded-[2rem] md:max-w-md"
@@ -62,7 +62,7 @@ export default function Home() {
           />
           <div className="absolute inset-0 flex flex-col items-center px-5 pt-7 text-center sm:px-6 sm:pt-10">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-laterite sm:text-xs">
-              Nord-Cameroun · Région du Nord
+              Nord-Cameroun Â· RÃ©gion du Nord
             </p>
             <h1 className="mt-3 font-display text-2xl font-semibold uppercase leading-tight tracking-wide text-indigo sm:mt-4 sm:text-3xl md:text-4xl">
               Bienvenue sur
@@ -70,13 +70,13 @@ export default function Home() {
               Garoua Explorer
             </h1>
             <p className="mt-3 max-w-[210px] font-sans text-sm text-ink/75 sm:mt-4 sm:max-w-xs sm:text-base">
-              Votre guide personnel pour découvrir le cœur battant du Nord Cameroun.
+              Votre guide personnel pour dÃ©couvrir le cÅ“ur battant du Nord Cameroun.
             </p>
           </div>
         </div>
       </section>
 
-      {/* MÉTÉO */}
+      {/* MÃ‰TÃ‰O */}
       <section className="px-6 pt-8">
         <WeatherCard />
       </section>
@@ -110,24 +110,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* VIDÉO DE PRÉSENTATION */}
+      {/* VIDÃ‰O DE PRÃ‰SENTATION */}
       <section className="mx-auto max-w-4xl px-6 py-4">
         <h2 className="text-center font-display text-2xl font-semibold text-indigo sm:text-3xl">
-          Garoua en vidéo
+          Garoua en vidÃ©o
         </h2>
         <div className="mx-auto mt-6 aspect-video w-full overflow-hidden rounded-2xl shadow-card">
           {PRESENTATION_VIDEO_ID ? (
             <iframe
               className="h-full w-full"
               src={`https://www.youtube.com/embed/${PRESENTATION_VIDEO_ID}`}
-              title="Présentation de Garoua Explorer"
+              title="PrÃ©sentation de Garoua Explorer"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-indigo/5 text-center">
-              <span className="text-3xl">🎬</span>
-              <p className="font-sans text-sm text-indigo/50">Vidéo de présentation bientôt disponible</p>
+              <span className="text-3xl">ðŸŽ¬</span>
+              <p className="font-sans text-sm text-indigo/50">VidÃ©o de prÃ©sentation bientÃ´t disponible</p>
             </div>
           )}
         </div>
@@ -136,7 +136,7 @@ export default function Home() {
       {/* FEATURES */}
       <section className="mx-auto max-w-6xl px-6 py-10">
         <h2 className="font-display text-3xl font-semibold text-indigo">
-          Pensé pour explorer, pas pour scroller
+          PensÃ© pour explorer, pas pour scroller
         </h2>
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           {features.map((f) => (
@@ -155,7 +155,7 @@ export default function Home() {
             Envie de sortir de la ville ?
           </h2>
           <p className="mx-auto mt-4 max-w-lg font-sans text-sable/90">
-            Gorges de Kola, Parc national de la Bénoué, Lac de Lagdo — on te dit exactement comment y aller.
+            Gorges de Kola, Parc national de la BÃ©nouÃ©, Lac de Lagdo â€” on te dit exactement comment y aller.
           </p>
           <Link to="/excursions" className="btn-secondary !border-sable !text-sable hover:!bg-sable hover:!text-laterite mt-8 inline-flex">
             Voir les excursions
@@ -165,3 +165,5 @@ export default function Home() {
     </div>
   );
 }
+
+
