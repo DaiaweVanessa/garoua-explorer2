@@ -53,6 +53,16 @@ export async function addComment(placeId: number, content: string): Promise<Comm
   return res.data.data;
 }
 
+export async function likeComment(commentId: number): Promise<{ likeCount: number }> {
+  const res = await api.post<ApiResponse<{ likeCount: number }>>(`/comments/${commentId}/like`);
+  return res.data.data;
+}
+
+export async function unlikeComment(commentId: number): Promise<{ likeCount: number }> {
+  const res = await api.delete<ApiResponse<{ likeCount: number }>>(`/comments/${commentId}/like`);
+  return res.data.data;
+}
+
 export async function ratePlace(placeId: number, stars: number): Promise<RatingSummary> {
   const res = await api.post<ApiResponse<RatingSummary>>(`/places/${placeId}/ratings`, { stars });
   return res.data.data;

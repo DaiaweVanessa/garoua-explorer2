@@ -23,11 +23,18 @@ export interface PaginatedComments {
 }
 
 export interface CommentRepository {
-  listByPlace(placeId: number, page: number, limit: number): Promise<PaginatedComments>;
+  listByPlace(placeId: number, page: number, limit: number, currentUserId?: number): Promise<PaginatedComments>;
   findById(id: number): Promise<Comment | null>;
   create(userId: number, placeId: number, content: string): Promise<Comment>;
   update(id: number, content: string): Promise<Comment>;
   delete(id: number): Promise<void>;
+}
+
+export interface CommentLikeRepository {
+  exists(userId: number, commentId: number): Promise<boolean>;
+  create(userId: number, commentId: number): Promise<void>;
+  delete(userId: number, commentId: number): Promise<void>;
+  countByComment(commentId: number): Promise<number>;
 }
 
 export interface RatingRepository {

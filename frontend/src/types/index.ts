@@ -21,6 +21,7 @@ export interface Place {
   address: string | null;
   phone: string | null;
   openingHours: string | null;
+  videoUrl: string | null;
   category: Category;
   photos: PlacePhoto[];
   distanceKm?: number;
@@ -43,6 +44,8 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   user: { id: number; name: string; avatarUrl: string | null };
+  likeCount: number;
+  isLikedByMe: boolean;
 }
 
 export interface RatingSummary {

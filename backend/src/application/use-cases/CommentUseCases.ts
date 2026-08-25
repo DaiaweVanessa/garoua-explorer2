@@ -1,12 +1,12 @@
-import { CommentRepository } from '@domain/repositories/InteractionRepositories';
+import { CommentRepository, CommentLikeRepository } from '@domain/repositories/InteractionRepositories';
 import { PlaceRepository } from '@domain/repositories/PlaceRepository';
 import { AppError } from '@presentation/middlewares/errorHandler';
 import { sanitizePlainText } from '@infrastructure/security/sanitizeText';
 
 export class ListCommentsUseCase {
   constructor(private readonly commentRepository: CommentRepository) {}
-  execute(placeId: number, page: number, limit: number) {
-    return this.commentRepository.listByPlace(placeId, page, limit);
+  execute(placeId: number, page: number, limit: number, currentUserId?: number) {
+    return this.commentRepository.listByPlace(placeId, page, limit, currentUserId);
   }
 }
 
@@ -25,12 +25,14 @@ export class CreateCommentUseCase {
   }
 }
 
-// Un commentaire ne peut être modifié/supprimé que par son auteur, ou par un Admin/Modérateur
-function assertCanModerate(comment: { userId: number }, requester: { userId: number; role: string }) {
+function assertCanModerate(
+  comment: { userId: number },
+  requester: { userId: number; role: string }
+) {
   const isOwner = comment.userId === requester.userId;
   const isModerator = requester.role === 'ADMIN' || requester.role === 'MODERATOR';
   if (!isOwner && !isModerator) {
-    throw new AppError(403, 'FORBIDDEN', "Tu ne peux modifier que tes propres commentaires");
+    throw new AppError(403, 'FORBIDDEN', "Tu n'as pas le droit de modifier ce commentaire");
   }
 }
 
@@ -57,5 +59,32 @@ export class DeleteCommentUseCase {
     }
     assertCanModerate(comment, requester);
     await this.commentRepository.delete(commentId);
+  }
+}
+
+export class LikeCommentUseCase {
+  constructor(
+    private readonly commentLikeRepository: CommentLikeRepository,
+    private readonly commentRepository: CommentRepository
+  ) {}
+
+  async execute(userId: number, commentId: number): Promise<{ likeCount: number }> {
+    const comment = await this.commentRepository.findById(commentId);
+    if (!comment) {
+      throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire introuvable');
+    }
+    await this.commentLikeRepository.create(userId, commentId);
+    const likeCount = await this.commentLikeRepository.countByComment(commentId);
+    return { likeCount };
+  }
+}
+
+export class UnlikeCommentUseCase {
+  constructor(private readonly commentLikeRepository: CommentLikeRepository) {}
+
+  async execute(userId: number, commentId: number): Promise<{ likeCount: number }> {
+    await this.commentLikeRepository.delete(userId, commentId);
+    const likeCount = await this.commentLikeRepository.countByComment(commentId);
+    return { likeCount };
   }
 }

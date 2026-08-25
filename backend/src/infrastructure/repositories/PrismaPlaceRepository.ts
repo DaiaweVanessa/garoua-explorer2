@@ -77,15 +77,19 @@ export class PrismaPlaceRepository implements PlaceRepository {
     // Recherche classique (sans géolocalisation)
     const where: Prisma.PlaceWhereInput = {};
     if (categorySlug) where.category = { slug: categorySlug };
+
+    const andConditions: Prisma.PlaceWhereInput[] = [];
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { description: { contains: search } },
-      ];
+      andConditions.push({
+        OR: [{ name: { contains: search } }, { description: { contains: search } }],
+      });
     }
     if (filters.hasExcursion) {
-      where.excursionInfo = { isNot: null };
+      andConditions.push({
+        OR: [{ excursionInfo: { isNot: null } }, { category: { slug: { contains: 'excursion' } } }],
+      });
     }
+    if (andConditions.length > 0) where.AND = andConditions;
 
     const [places, total] = await Promise.all([
       prisma.place.findMany({

@@ -16,6 +16,7 @@ export interface PlaceInput {
   address?: string | null;
   phone?: string | null;
   openingHours?: string | null;
+  videoUrl?: string | null;
 }
 
 export async function createPlace(input: PlaceInput): Promise<Place> {

@@ -6,6 +6,8 @@ export interface Comment {
   createdAt: Date;
   updatedAt: Date;
   user: { id: number; name: string; avatarUrl: string | null };
+  likeCount: number;
+  isLikedByMe: boolean;
 }
 
 export interface RatingSummary {

@@ -30,12 +30,13 @@ model User {
   avatarUrl    String?  @map("avatar_url")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  places    Place[]    @relation("PlaceCreatedBy")
-  favorites Favorite[]
-  likes     Like[]
-  comments  Comment[]
-  ratings   Rating[]
-  events    Event[]    @relation("EventCreatedBy")
+  places       Place[]    @relation("PlaceCreatedBy")
+  favorites    Favorite[]
+  likes        Like[]
+  comments     Comment[]
+  commentLikes CommentLike[]
+  ratings      Rating[]
+  events       Event[]    @relation("EventCreatedBy")
 
   @@map("users")
 }
@@ -141,9 +142,24 @@ model Comment {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  likes CommentLike[]
+
   @@index([placeId])
   @@map("comments")
 }
+
+model CommentLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId Int      @map("comment_id")
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
+}
+
 
 model Rating {
   id        Int      @id @default(autoincrement())
