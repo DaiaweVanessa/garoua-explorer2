@@ -14,6 +14,8 @@ const categories = [
 // Remplace cet ID par celui de la vraie video YouTube une fois disponible
 // (dans l'URL youtube.com/watch?v=XXXXXXXXXXX, XXXXXXXXXXX est l'ID)
 const PRESENTATION_VIDEO_ID = 'dzpX7DaGwP0';
+// Mets true si la video ci-dessus est un YouTube Short (format vertical 9:16)
+const PRESENTATION_VIDEO_IS_SHORT = true;
 
 const features = [
   {
@@ -115,7 +117,11 @@ export default function Home() {
         <h2 className="text-center font-display text-2xl font-semibold text-indigo sm:text-3xl">
           Garoua en vidéo
         </h2>
-        <div className="mx-auto mt-6 aspect-video w-full overflow-hidden rounded-2xl shadow-card">
+        <div
+          className={`mx-auto mt-6 overflow-hidden rounded-2xl shadow-card ${
+            PRESENTATION_VIDEO_IS_SHORT ? 'aspect-[9/16] max-w-xs' : 'aspect-video w-full'
+          }`}
+        >
           {PRESENTATION_VIDEO_ID ? (
             <iframe
               className="h-full w-full"
