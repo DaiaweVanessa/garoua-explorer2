@@ -28,3 +28,15 @@ export function getYouTubeEmbedUrl(input: string | null | undefined): string | n
 
   return null;
 }
+
+// Detecte si l'URL est un YouTube Short (format vertical 9:16)
+export function isYouTubeShort(input: string | null | undefined): boolean {
+  if (!input) return false;
+  const trimmed = input.trim();
+  try {
+    const url = new URL(trimmed);
+    return url.hostname.includes('youtube.com') && url.pathname.startsWith('/shorts/');
+  } catch {
+    return false;
+  }
+}

@@ -15,7 +15,7 @@ import { StarRating } from '@/components/StarRating';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { useAuth } from '@/hooks/useAuth';
-import { getYouTubeEmbedUrl } from '@/lib/youtube';
+import { getYouTubeEmbedUrl, isYouTubeShort } from '@/lib/youtube';
 
 export default function PlaceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -105,6 +105,7 @@ export default function PlaceDetail() {
   }
 
   const embedUrl = getYouTubeEmbedUrl(place.videoUrl);
+  const isShort = isYouTubeShort(place.videoUrl);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -197,7 +198,11 @@ export default function PlaceDetail() {
           {embedUrl && (
             <div className="mt-8">
               <h2 className="font-display text-xl font-semibold text-indigo">Vidéo</h2>
-              <div className="mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-black">
+              <div
+                className={`mt-3 overflow-hidden rounded-2xl bg-black ${
+                  isShort ? 'mx-auto aspect-[9/16] max-w-xs' : 'aspect-video w-full'
+                }`}
+              >
                 <iframe
                   src={embedUrl}
                   title={`Vidéo de ${place.name}`}
