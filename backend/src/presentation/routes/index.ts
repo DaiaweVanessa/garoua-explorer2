@@ -11,9 +11,7 @@ import { transportRouter } from './transport.route';
 import { eventRouter } from './event.route';
 import { userRouter } from './user.route';
 import { adminRouter } from './admin.route';
-
 export const apiRouter = Router();
-
 apiRouter.use(healthRouter);
 apiRouter.use(authRouter);
 apiRouter.use(categoryRouter);

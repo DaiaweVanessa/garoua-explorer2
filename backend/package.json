@@ -17,6 +17,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
+    "google-auth-library": "^11.0.2",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
@@ -34,9 +35,9 @@
     "@types/sanitize-html": "^2.13.0",
     "@types/swagger-ui-express": "^4.1.6",
     "prisma": "^5.20.0",
+    "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.5.3"
   }
 }

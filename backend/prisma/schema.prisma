@@ -25,7 +25,8 @@ model User {
   id           Int      @id @default(autoincrement())
   name         String
   email        String   @unique
-  passwordHash String   @map("password_hash")
+  passwordHash String?  @map("password_hash")
+  googleId     String?  @unique @map("google_id")
   role         Role     @default(USER)
   avatarUrl    String?  @map("avatar_url")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -201,8 +202,8 @@ model TransportOption {
   @@map("transport_options")
 }
 
-// Contenu général sur Garoua (histoire, culture, gastronomie, climat, quartiers).
-// Conçue comme un singleton : une seule ligne (id = 1), gérée via upsert.
+// Contenu gÃ©nÃ©ral sur Garoua (histoire, culture, gastronomie, climat, quartiers).
+// ConÃ§ue comme un singleton : une seule ligne (id = 1), gÃ©rÃ©e via upsert.
 model CityInfo {
   id         Int      @id @default(autoincrement())
   history    String?  @db.Text

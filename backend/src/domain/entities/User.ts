@@ -4,7 +4,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash: string | null;
+  googleId: string | null;
   role: Role;
   avatarUrl: string | null;
   createdAt: Date;

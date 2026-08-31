@@ -16,7 +16,9 @@ export class PrismaUserRepository implements UserRepository {
       data: {
         name: input.name,
         email: input.email,
-        passwordHash: input.passwordHash,
+        passwordHash: input.passwordHash ?? null,
+        googleId: input.googleId ?? null,
+        avatarUrl: input.avatarUrl ?? null,
       },
     });
   }
@@ -36,5 +38,9 @@ export class PrismaUserRepository implements UserRepository {
 
   async delete(id: number): Promise<void> {
     await prisma.user.delete({ where: { id } });
+  }
+
+  async linkGoogleAccount(id: number, googleId: string): Promise<User> {
+    return prisma.user.update({ where: { id }, data: { googleId } });
   }
 }

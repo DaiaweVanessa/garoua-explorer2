@@ -21,6 +21,14 @@ export class LoginUserUseCase {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Email ou mot de passe incorrect');
     }
 
+    if (!user.passwordHash) {
+      throw new AppError(
+        401,
+        'GOOGLE_ACCOUNT_ONLY',
+        'Ce compte utilise la connexion Google. Connecte-toi avec Google.'
+      );
+    }
+
     const passwordMatches = await this.passwordHasher.compare(input.password, user.passwordHash);
     if (!passwordMatches) {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Email ou mot de passe incorrect');

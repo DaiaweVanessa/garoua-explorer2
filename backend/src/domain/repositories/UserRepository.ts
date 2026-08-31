@@ -3,7 +3,9 @@ import { User } from '@domain/entities/User';
 export interface CreateUserInput {
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string | null;
+  googleId?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface UpdateUserInput {
@@ -26,4 +28,5 @@ export interface UserRepository {
   findMany(page: number, limit: number): Promise<PaginatedUsers>;
   update(id: number, input: UpdateUserInput): Promise<User>;
   delete(id: number): Promise<void>;
+  linkGoogleAccount(id: number, googleId: string): Promise<User>;
 }
