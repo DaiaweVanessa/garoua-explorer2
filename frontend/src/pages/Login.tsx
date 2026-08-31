@@ -3,9 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/services/api';
 import { isAxiosError } from 'axios';
+import { GoogleLoginButton } from '@/components/GoogleLoginButton';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -14,14 +15,18 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  function redirectAfterLogin() {
+    const redirectTo = (location.state as { from?: string } | null)?.from ?? '/';
+    navigate(redirectTo, { replace: true });
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
       await login(email, password);
-      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/';
-      navigate(redirectTo, { replace: true });
+      redirectAfterLogin();
     } catch (err) {
       if (isAxiosError<ApiError>(err) && err.response?.data?.error?.message) {
         setError(err.response.data.error.message);
@@ -33,6 +38,16 @@ export default function Login() {
     }
   }
 
+  async function handleGoogleSuccess(idToken: string) {
+    setError(null);
+    try {
+      await loginWithGoogle(idToken);
+      redirectAfterLogin();
+    } catch {
+      setError('Impossible de se connecter avec Google. Réessaie.');
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-laterite">Bon retour</p>
@@ -41,7 +56,17 @@ export default function Login() {
         Accède à tes favoris et laisse des avis sur tes lieux préférés.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      <div className="mt-8">
+        <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={() => setError('Connexion Google annulée ou échouée.')} />
+      </div>
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-indigo/10" />
+        <span className="font-sans text-xs uppercase tracking-wide text-ink/40">ou</span>
+        <div className="h-px flex-1 bg-indigo/10" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label htmlFor="email" className="font-sans text-sm font-semibold text-indigo">
             Email

@@ -8,6 +8,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -55,6 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const newUser = await authService.register({ name, email, password });
         setUser(newUser);
       },
+      loginWithGoogle: async (idToken) => {
+        const loggedInUser = await authService.loginWithGoogle(idToken);
+        setUser(loggedInUser);
+      },
       logout: async () => {
         await authService.logout();
         setUser(null);
@@ -68,6 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth doit être utilisé à l’intérieur de <AuthProvider>');
+  if (!ctx) throw new Error('useAuth doit etre utilise a l\u2019interieur de <AuthProvider>');
   return ctx;
 }

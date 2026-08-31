@@ -24,6 +24,12 @@ export async function login(input: { email: string; password: string }) {
   return res.data.data.user;
 }
 
+export async function loginWithGoogle(idToken: string) {
+  const res = await api.post<ApiResponse<AuthResult>>('/auth/google', { idToken });
+  storeTokens(res.data.data.accessToken, res.data.data.refreshToken);
+  return res.data.data.user;
+}
+
 export async function fetchMe() {
   const res = await api.get<ApiResponse<User>>('/auth/me');
   return res.data.data;
