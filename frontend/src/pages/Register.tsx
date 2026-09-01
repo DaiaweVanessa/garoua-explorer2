@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/services/api';
 import { isAxiosError } from 'axios';
+import { GoogleLoginButton } from '@/components/GoogleLoginButton';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -32,6 +34,16 @@ export default function Register() {
     }
   }
 
+  async function handleGoogleSuccess(idToken: string) {
+    setError(null);
+    try {
+      await loginWithGoogle(idToken);
+      navigate('/', { replace: true });
+    } catch {
+      setError('Impossible de continuer avec Google. Réessaie.');
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-laterite">Bienvenue</p>
@@ -40,7 +52,17 @@ export default function Register() {
         Enregistre tes lieux favoris et partage tes avis avec les autres explorateurs.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      <div className="mt-8">
+        <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={() => setError('Connexion Google annulée ou échouée.')} />
+      </div>
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-indigo/10" />
+        <span className="font-sans text-xs uppercase tracking-wide text-ink/40">ou</span>
+        <div className="h-px flex-1 bg-indigo/10" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label htmlFor="name" className="font-sans text-sm font-semibold text-indigo">
             Nom
@@ -76,9 +98,8 @@ export default function Register() {
           <label htmlFor="password" className="font-sans text-sm font-semibold text-indigo">
             Mot de passe
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             minLength={8}
             value={password}

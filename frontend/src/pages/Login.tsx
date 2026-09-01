@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/services/api';
 import { isAxiosError } from 'axios';
 import { GoogleLoginButton } from '@/components/GoogleLoginButton';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export default function Login() {
   const { login, loginWithGoogle } = useAuth();
@@ -86,9 +87,8 @@ export default function Login() {
           <label htmlFor="password" className="font-sans text-sm font-semibold text-indigo">
             Mot de passe
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
