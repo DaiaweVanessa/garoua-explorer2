@@ -8,6 +8,7 @@ const links = [
   { to: '/admin/garoua', label: 'Contenu Garoua', icon: '📜' },
   { to: '/admin/transport', label: 'Transport', icon: '🏍️' },
   { to: '/admin/evenements', label: 'Événements', icon: '📅' },
+  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: '👤' },
 ];
 
 export default function AdminLayout() {

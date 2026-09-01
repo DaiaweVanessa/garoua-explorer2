@@ -33,6 +33,7 @@ export interface User {
   email: string;
   role: 'ADMIN' | 'MODERATOR' | 'USER';
   avatarUrl: string | null;
+  googleId: string | null;
   createdAt: string;
 }
 

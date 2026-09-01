@@ -1,5 +1,5 @@
 import { api, ApiResponse } from './api';
-import { AdminStats, Category, CityInfo, EventItem, ExcursionInfo, Place, TransportOption } from '@/types';
+import { AdminStats, Category, CityInfo, EventItem, ExcursionInfo, Place, TransportOption, User } from '@/types';
 
 export async function fetchAdminStats(): Promise<AdminStats> {
   const res = await api.get<ApiResponse<AdminStats>>('/admin/stats');
@@ -136,4 +136,30 @@ export async function updateEvent(id: number, input: Partial<EventInput>): Promi
 
 export async function deleteEvent(id: number): Promise<void> {
   await api.delete(`/events/${id}`);
+}
+
+// --- Utilisateurs ---
+export interface UpdateUserInput {
+  name?: string;
+  avatarUrl?: string | null;
+  role?: 'ADMIN' | 'MODERATOR' | 'USER';
+}
+
+export async function fetchUsers(page = 1, limit = 20): Promise<{ items: User[]; total: number; page: number; limit: number }> {
+  const res = await api.get<ApiResponse<User[]>>('/users', { params: { page, limit } });
+  return {
+    items: res.data.data,
+    total: res.data.meta?.total ?? res.data.data.length,
+    page: res.data.meta?.page ?? page,
+    limit: res.data.meta?.limit ?? limit,
+  };
+}
+
+export async function updateUser(id: number, input: UpdateUserInput): Promise<User> {
+  const res = await api.patch<ApiResponse<User>>(`/users/${id}`, input);
+  return res.data.data;
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  await api.delete(`/users/${id}`);
 }

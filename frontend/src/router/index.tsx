@@ -18,6 +18,7 @@ import AdminCategories from '@/pages/admin/AdminCategories';
 import AdminCityInfo from '@/pages/admin/AdminCityInfo';
 import AdminTransport from '@/pages/admin/AdminTransport';
 import AdminEvents from '@/pages/admin/AdminEvents';
+import AdminUsers from '@/pages/admin/AdminUsers';
 import ComingSoon from '@/pages/ComingSoon';
 
 export const router = createBrowserRouter([
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
           { path: 'garoua', element: <AdminCityInfo /> },
           { path: 'transport', element: <AdminTransport /> },
           { path: 'evenements', element: <AdminEvents /> },
+          { path: 'utilisateurs', element: <AdminUsers /> },
         ],
       },
       { path: '*', element: <ComingSoon title="Page introuvable" /> },
