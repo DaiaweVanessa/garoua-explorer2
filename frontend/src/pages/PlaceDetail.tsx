@@ -83,6 +83,13 @@ export default function PlaceDetail() {
     };
   }, [placeId, isAuthenticated]);
 
+  useEffect(() => {
+    if (userPosition && place) {
+      fetchRoute(userPosition, { latitude: place.latitude, longitude: place.longitude });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPosition, place]);
+
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-24 text-center font-sans text-sm text-ink/50">
@@ -115,13 +122,6 @@ export default function PlaceDetail() {
     clearRoute();
     locate();
   }
-
-  useEffect(() => {
-    if (userPosition && place) {
-      fetchRoute(userPosition, { latitude: place.latitude, longitude: place.longitude });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPosition]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
