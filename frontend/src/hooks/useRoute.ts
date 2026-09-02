@@ -15,8 +15,8 @@ interface UseRouteResult {
   clearRoute: () => void;
 }
 
-// Serveur de demonstration public OSRM (gratuit, sans cle API, limite raisonnable pour un usage leger)
 const OSRM_BASE_URL = 'https://router.project-osrm.org/route/v1/driving';
+const AVERAGE_SPEED_KMH = 70;
 
 export function useRoute(): UseRouteResult {
   const [route, setRoute] = useState<RouteResult | null>(null);
@@ -41,10 +41,15 @@ export function useRoute(): UseRouteResult {
         ([lng, lat]: [number, number]) => [lat, lng]
       );
 
+      const distanceKm = Math.round((leg.distance / 1000) * 10) / 10;
+      // OSRM sous-estime souvent la vitesse sur les routes camerounaises mal cartographiees.
+      // On recalcule une duree plus realiste a partir de la distance reelle (fiable).
+      const durationMin = Math.round((distanceKm / AVERAGE_SPEED_KMH) * 60);
+
       setRoute({
         coordinates,
-        distanceKm: Math.round((leg.distance / 1000) * 10) / 10,
-        durationMin: Math.round(leg.duration / 60),
+        distanceKm,
+        durationMin,
       });
     } catch {
       setError("Impossible de calculer l'itineraire pour le moment.");
