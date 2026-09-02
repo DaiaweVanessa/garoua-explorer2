@@ -15,6 +15,8 @@ import { StarRating } from '@/components/StarRating';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { useAuth } from '@/hooks/useAuth';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useRoute } from '@/hooks/useRoute';
 import { getYouTubeEmbedUrl, isYouTubeShort } from '@/lib/youtube';
 
 export default function PlaceDetail() {
@@ -22,6 +24,8 @@ export default function PlaceDetail() {
   const placeId = Number(id);
   const { isAuthenticated, user } = useAuth();
   const canManagePhotos = user?.role === 'ADMIN' || user?.role === 'MODERATOR';
+  const { position: userPosition, loading: locating, error: geoError, locate } = useGeolocation();
+  const { route, loading: routing, error: routeError, fetchRoute, clearRoute } = useRoute();
 
   const [place, setPlace] = useState<Place | null>(null);
   const [rating, setRating] = useState<RatingSummary>({ average: 0, count: 0 });
@@ -106,6 +110,18 @@ export default function PlaceDetail() {
 
   const embedUrl = getYouTubeEmbedUrl(place.videoUrl);
   const isShort = isYouTubeShort(place.videoUrl);
+
+  function handleGetDirections() {
+    clearRoute();
+    locate();
+  }
+
+  useEffect(() => {
+    if (userPosition && place) {
+      fetchRoute(userPosition, { latitude: place.latitude, longitude: place.longitude });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPosition]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -320,8 +336,45 @@ export default function PlaceDetail() {
             )}
           </div>
 
+          <div className="card space-y-3 p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-indigo">Itinéraire</h2>
+              {!userPosition && (
+                <button
+                  onClick={handleGetDirections}
+                  disabled={locating}
+                  className="rounded-full bg-indigo px-4 py-1.5 font-sans text-xs font-semibold text-sable hover:bg-indigo/90 disabled:opacity-60"
+                >
+                  {locating ? 'Localisation...' : "Comment y aller ?"}
+                </button>
+              )}
+            </div>
+
+            {geoError && <p className="font-sans text-xs text-laterite">{geoError}</p>}
+            {routing && <p className="font-sans text-xs text-ink/50">Calcul de l'itinéraire...</p>}
+            {routeError && <p className="font-sans text-xs text-laterite">{routeError}</p>}
+
+            {route && (
+              <div className="flex items-center gap-4 rounded-xl bg-benoue/10 px-4 py-3">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-wide text-benoue-dark/70">Distance</p>
+                  <p className="font-sans text-sm font-semibold text-ink">{route.distanceKm} km</p>
+                </div>
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-wide text-benoue-dark/70">Durée estimée</p>
+                  <p className="font-sans text-sm font-semibold text-ink">{route.durationMin} min</p>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="h-72 overflow-hidden rounded-2xl">
-            <PlacesMap places={[place]} />
+            <PlacesMap
+              places={[place]}
+              userPosition={userPosition ? [userPosition.latitude, userPosition.longitude] : null}
+              routeCoordinates={route?.coordinates}
+              fitToRoute={Boolean(route)}
+            />
           </div>
         </div>
       </div>

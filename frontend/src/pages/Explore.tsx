@@ -4,6 +4,7 @@ import { fetchCategories, fetchPlaces } from '@/services/places';
 import { Category, Place } from '@/types';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlacesMap } from '@/components/PlacesMap';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export default function Explore() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { position: userPosition, loading: locating, error: geoError, locate } = useGeolocation();
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => setCategories([]));
@@ -65,7 +67,7 @@ export default function Explore() {
         </button>
       </form>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap items-center gap-2">
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -79,7 +81,18 @@ export default function Explore() {
             {cat.name}
           </button>
         ))}
+
+        <button
+          onClick={locate}
+          disabled={locating}
+          className="ml-auto flex items-center gap-1.5 rounded-full border border-indigo/15 px-4 py-1.5 font-sans text-sm text-indigo/70 transition-colors hover:border-laterite hover:text-laterite disabled:opacity-60"
+        >
+          <span aria-hidden>📍</span>
+          {locating ? 'Localisation...' : userPosition ? 'Position mise à jour' : 'Me localiser'}
+        </button>
       </div>
+
+      {geoError && <p className="mt-3 font-sans text-xs text-laterite">{geoError}</p>}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="space-y-4">
@@ -94,7 +107,12 @@ export default function Explore() {
         </div>
 
         <div className="h-[500px] lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
-          <PlacesMap places={places} />
+          <PlacesMap
+            places={places}
+            userPosition={userPosition ? [userPosition.latitude, userPosition.longitude] : null}
+            center={userPosition ? [userPosition.latitude, userPosition.longitude] : undefined}
+            zoom={userPosition ? 14 : undefined}
+          />
         </div>
       </div>
     </div>
