@@ -14,6 +14,7 @@ import { PlacesMap } from '@/components/PlacesMap';
 import { StarRating } from '@/components/StarRating';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoUploader } from '@/components/PhotoUploader';
+import { CommentItem } from '@/components/CommentItem';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useRoute } from '@/hooks/useRoute';
@@ -35,6 +36,12 @@ export default function PlaceDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  function reloadComments() {
+    fetchComments(placeId)
+      .then((res) => setComments(res.items))
+      .catch(() => {});
+  }
 
   useEffect(() => {
     if (!Number.isFinite(placeId)) {
@@ -68,9 +75,7 @@ export default function PlaceDetail() {
       .then((data) => !cancelled && setExcursion(data))
       .catch(() => !cancelled && setExcursion(null));
 
-    fetchComments(placeId)
-      .then((res) => !cancelled && setComments(res.items))
-      .catch(() => {});
+    reloadComments();
 
     if (isAuthenticated) {
       fetchFavorites()
@@ -106,10 +111,10 @@ export default function PlaceDetail() {
           Ce lieu est introuvable
         </h1>
         <p className="mt-4 font-sans text-ink/60">
-          Il a peut-être été retiré, ou l'adresse n'est pas correcte.
+          Il a peut-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© retirÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©, ou l'adresse n'est pas correcte.
         </p>
         <Link to="/lieux" className="btn-primary mt-8 inline-flex">
-          Retour à l'exploration
+          Retour ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  l'exploration
         </Link>
       </div>
     );
@@ -213,7 +218,7 @@ export default function PlaceDetail() {
 
           {embedUrl && (
             <div className="mt-8">
-              <h2 className="font-display text-xl font-semibold text-indigo">Vidéo</h2>
+              <h2 className="font-display text-xl font-semibold text-indigo">VidÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©o</h2>
               <div
                 className={`mt-3 overflow-hidden rounded-2xl bg-black ${
                   isShort ? 'mx-auto aspect-[9/16] max-w-xs' : 'aspect-video w-full'
@@ -221,7 +226,7 @@ export default function PlaceDetail() {
               >
                 <iframe
                   src={embedUrl}
-                  title={`Vidéo de ${place.name}`}
+                  title={`VidÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©o de ${place.name}`}
                   className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -248,18 +253,18 @@ export default function PlaceDetail() {
                   <InfoStat label="Trajet" value={`${excursion.travelTimeMin} min`} />
                 )}
                 {excursion.estimatedCost && (
-                  <InfoStat label="Coût estimé" value={excursion.estimatedCost} />
+                  <InfoStat label="CoÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â»t estimÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©" value={excursion.estimatedCost} />
                 )}
                 {excursion.recommendedTransport && (
-                  <InfoStat label="Transport conseillé" value={excursion.recommendedTransport} />
+                  <InfoStat label="Transport conseillÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©" value={excursion.recommendedTransport} />
                 )}
                 {excursion.bestPeriod && (
-                  <InfoStat label="Meilleure période" value={excursion.bestPeriod} />
+                  <InfoStat label="Meilleure pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©riode" value={excursion.bestPeriod} />
                 )}
               </dl>
               {excursion.practicalTips && (
                 <p className="mt-5 rounded-xl bg-white/60 p-4 font-sans text-sm text-ink/70">
-                  💡 {excursion.practicalTips}
+                  ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¡ {excursion.practicalTips}
                 </p>
               )}
             </div>
@@ -275,7 +280,7 @@ export default function PlaceDetail() {
               <ReviewForm
                 placeId={place.id}
                 onRated={setRating}
-                onCommented={(c) => setComments((prev) => [c, ...prev])}
+                onCommented={reloadComments}
               />
             ) : (
               <div className="mt-4 rounded-2xl border border-dashed border-indigo/15 p-5 font-sans text-sm text-ink/60">
@@ -289,56 +294,40 @@ export default function PlaceDetail() {
             <div className="mt-6 space-y-5">
               {comments.length === 0 && (
                 <p className="font-sans text-sm text-ink/50">
-                  Aucun avis pour l'instant — sois le premier à en laisser un.
+                  Aucun avis pour l'instant ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â sois le premier ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  en laisser un.
                 </p>
               )}
               {comments.map((comment) => (
-                <div key={comment.id} className="border-b border-indigo/10 pb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-9 w-9 place-items-center rounded-full bg-indigo font-display text-sm text-sable">
-                      {comment.user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-semibold text-ink">
-                        {comment.user.name}
-                      </p>
-                      <p className="font-mono text-xs text-ink/40">
-                        {new Date(comment.createdAt).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 font-sans text-sm leading-relaxed text-ink/75">
-                    {comment.content}
-                  </p>
-                </div>
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  placeId={place.id}
+                  onChanged={reloadComments}
+                />
               ))}
             </div>
           </div>
         </div>
 
-        {/* COLONNE LATÉRALE : INFOS PRATIQUES + CARTE */}
+        {/* COLONNE LATÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°RALE : INFOS PRATIQUES + CARTE */}
         <div className="space-y-6">
           <div className="card space-y-4 p-6">
             <h2 className="font-display text-lg font-semibold text-indigo">Infos pratiques</h2>
             {place.address && <PracticalInfo label="Adresse" value={place.address} />}
-            {place.phone && <PracticalInfo label="Téléphone" value={place.phone} />}
+            {place.phone && <PracticalInfo label="TÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©phone" value={place.phone} />}
             {place.openingHours && (
               <PracticalInfo label="Horaires" value={place.openingHours} />
             )}
             {!place.address && !place.phone && !place.openingHours && (
               <p className="font-sans text-sm text-ink/50">
-                Aucune information pratique renseignée pour ce lieu.
+                Aucune information pratique renseignÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e pour ce lieu.
               </p>
             )}
           </div>
 
           <div className="card space-y-3 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold text-indigo">Itinéraire</h2>
+              <h2 className="font-display text-lg font-semibold text-indigo">ItinÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©raire</h2>
               {!userPosition && (
                 <button
                   onClick={handleGetDirections}
@@ -351,7 +340,7 @@ export default function PlaceDetail() {
             </div>
 
             {geoError && <p className="font-sans text-xs text-laterite">{geoError}</p>}
-            {routing && <p className="font-sans text-xs text-ink/50">Calcul de l'itinéraire...</p>}
+            {routing && <p className="font-sans text-xs text-ink/50">Calcul de l'itinÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©raire...</p>}
             {routeError && <p className="font-sans text-xs text-laterite">{routeError}</p>}
 
             {route && (
@@ -361,7 +350,7 @@ export default function PlaceDetail() {
                   <p className="font-sans text-sm font-semibold text-ink">{route.distanceKm} km</p>
                 </div>
                 <div>
-                  <p className="font-mono text-[11px] uppercase tracking-wide text-benoue-dark/70">Durée estimée</p>
+                  <p className="font-mono text-[11px] uppercase tracking-wide text-benoue-dark/70">DurÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e estimÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e</p>
                   <p className="font-sans text-sm font-semibold text-ink">{route.durationMin} min</p>
                 </div>
               </div>
@@ -389,7 +378,7 @@ function ReviewForm({
 }: {
   placeId: number;
   onRated: (summary: RatingSummary) => void;
-  onCommented: (comment: Comment) => void;
+  onCommented: () => void;
 }) {
   const [stars, setStars] = useState(0);
   const [hoverStars, setHoverStars] = useState(0);
@@ -420,8 +409,8 @@ function ReviewForm({
     setCommentSubmitting(true);
     setError(null);
     try {
-      const comment = await addComment(placeId, content.trim());
-      onCommented(comment);
+      await addComment(placeId, content.trim());
+      onCommented();
       setContent('');
     } catch {
       setError("Impossible d'envoyer l'avis.");
@@ -444,13 +433,13 @@ function ReviewForm({
               onMouseLeave={() => setHoverStars(0)}
               onClick={() => submitRating(n)}
               className="text-savane-dark transition-transform hover:scale-110 disabled:opacity-60"
-              aria-label={`${n} étoile${n > 1 ? 's' : ''}`}
+              aria-label={`${n} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©toile${n > 1 ? 's' : ''}`}
             >
-              {n <= (hoverStars || stars) ? '★' : '☆'}
+              {n <= (hoverStars || stars) ? 'ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦' : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â '}
             </button>
           ))}
         </div>
-        {ratingDone && <span className="font-sans text-xs text-benoue-dark">Note enregistrée ✓</span>}
+        {ratingDone && <span className="font-sans text-xs text-benoue-dark">Note enregistrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ</span>}
       </div>
 
       <form onSubmit={handleCommentSubmit} className="mt-5">
@@ -462,7 +451,7 @@ function ReviewForm({
           rows={3}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Qu'as-tu pensé de ce lieu ?"
+          placeholder="Qu'as-tu pensÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© de ce lieu ?"
           className="mt-1.5 w-full rounded-xl border border-indigo/15 bg-sable-light px-4 py-3 font-sans text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-laterite"
         />
         {error && <p className="mt-2 font-sans text-sm text-laterite">{error}</p>}
