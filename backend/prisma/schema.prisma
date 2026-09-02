@@ -142,10 +142,14 @@ model Comment {
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  parentId  Int?     @map("parent_id")
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
 
   likes CommentLike[]
 
   @@index([placeId])
+  @@index([parentId])
   @@map("comments")
 }
 
@@ -202,8 +206,8 @@ model TransportOption {
   @@map("transport_options")
 }
 
-// Contenu gÃ©nÃ©ral sur Garoua (histoire, culture, gastronomie, climat, quartiers).
-// ConÃ§ue comme un singleton : une seule ligne (id = 1), gÃ©rÃ©e via upsert.
+// Contenu gÃƒÂ©nÃƒÂ©ral sur Garoua (histoire, culture, gastronomie, climat, quartiers).
+// ConÃƒÂ§ue comme un singleton : une seule ligne (id = 1), gÃƒÂ©rÃƒÂ©e via upsert.
 model CityInfo {
   id         Int      @id @default(autoincrement())
   history    String?  @db.Text

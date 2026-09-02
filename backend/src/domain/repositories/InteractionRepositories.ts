@@ -24,17 +24,13 @@ export interface PaginatedComments {
 
 export interface CommentRepository {
   listByPlace(placeId: number, page: number, limit: number, currentUserId?: number): Promise<PaginatedComments>;
-  findById(id: number): Promise<Comment | null>;
-  create(userId: number, placeId: number, content: string): Promise<Comment>;
-  update(id: number, content: string): Promise<Comment>;
+  findById(id: number, currentUserId?: number): Promise<Comment | null>;
+  create(userId: number, placeId: number, content: string, parentId?: number | null): Promise<Comment>;
+  update(id: number, content: string, currentUserId?: number): Promise<Comment>;
   delete(id: number): Promise<void>;
-}
-
-export interface CommentLikeRepository {
-  exists(userId: number, commentId: number): Promise<boolean>;
-  create(userId: number, commentId: number): Promise<void>;
-  delete(userId: number, commentId: number): Promise<void>;
-  countByComment(commentId: number): Promise<number>;
+  like(userId: number, commentId: number): Promise<void>;
+  unlike(userId: number, commentId: number): Promise<void>;
+  hasLiked(userId: number, commentId: number): Promise<boolean>;
 }
 
 export interface RatingRepository {

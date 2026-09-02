@@ -1,4 +1,4 @@
-import { CommentRepository, CommentLikeRepository } from '@domain/repositories/InteractionRepositories';
+import { CommentRepository } from '@domain/repositories/InteractionRepositories';
 import { PlaceRepository } from '@domain/repositories/PlaceRepository';
 import { AppError } from '@presentation/middlewares/errorHandler';
 import { sanitizePlainText } from '@infrastructure/security/sanitizeText';
@@ -16,23 +16,32 @@ export class CreateCommentUseCase {
     private readonly placeRepository: PlaceRepository
   ) {}
 
-  async execute(userId: number, placeId: number, content: string) {
+  async execute(userId: number, placeId: number, content: string, parentId?: number | null) {
     const place = await this.placeRepository.findById(placeId);
     if (!place) {
       throw new AppError(404, 'PLACE_NOT_FOUND', 'Lieu introuvable');
     }
-    return this.commentRepository.create(userId, placeId, sanitizePlainText(content));
+
+    if (parentId) {
+      const parent = await this.commentRepository.findById(parentId);
+      if (!parent || parent.placeId !== placeId) {
+        throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire parent introuvable');
+      }
+      if (parent.parentId) {
+        throw new AppError(400, 'INVALID_REPLY', 'Impossible de répondre à une réponse');
+      }
+    }
+
+    return this.commentRepository.create(userId, placeId, sanitizePlainText(content), parentId ?? null);
   }
 }
 
-function assertCanModerate(
-  comment: { userId: number },
-  requester: { userId: number; role: string }
-) {
+// Un commentaire ne peut être modifié/supprimé que par son auteur, ou par un Admin/Modérateur
+function assertCanModerate(comment: { userId: number }, requester: { userId: number; role: string }) {
   const isOwner = comment.userId === requester.userId;
   const isModerator = requester.role === 'ADMIN' || requester.role === 'MODERATOR';
   if (!isOwner && !isModerator) {
-    throw new AppError(403, 'FORBIDDEN', "Tu n'as pas le droit de modifier ce commentaire");
+    throw new AppError(403, 'FORBIDDEN', "Tu ne peux modifier que tes propres commentaires");
   }
 }
 
@@ -45,7 +54,7 @@ export class UpdateCommentUseCase {
       throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire introuvable');
     }
     assertCanModerate(comment, requester);
-    return this.commentRepository.update(commentId, sanitizePlainText(content));
+    return this.commentRepository.update(commentId, sanitizePlainText(content), requester.userId);
   }
 }
 
@@ -63,28 +72,29 @@ export class DeleteCommentUseCase {
 }
 
 export class LikeCommentUseCase {
-  constructor(
-    private readonly commentLikeRepository: CommentLikeRepository,
-    private readonly commentRepository: CommentRepository
-  ) {}
+  constructor(private readonly commentRepository: CommentRepository) {}
 
-  async execute(userId: number, commentId: number): Promise<{ likeCount: number }> {
+  async execute(userId: number, commentId: number) {
     const comment = await this.commentRepository.findById(commentId);
     if (!comment) {
       throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire introuvable');
     }
-    await this.commentLikeRepository.create(userId, commentId);
-    const likeCount = await this.commentLikeRepository.countByComment(commentId);
-    return { likeCount };
+    await this.commentRepository.like(userId, commentId);
+    const updated = await this.commentRepository.findById(commentId, userId);
+    return { likeCount: updated!.likeCount };
   }
 }
 
 export class UnlikeCommentUseCase {
-  constructor(private readonly commentLikeRepository: CommentLikeRepository) {}
+  constructor(private readonly commentRepository: CommentRepository) {}
 
-  async execute(userId: number, commentId: number): Promise<{ likeCount: number }> {
-    await this.commentLikeRepository.delete(userId, commentId);
-    const likeCount = await this.commentLikeRepository.countByComment(commentId);
-    return { likeCount };
+  async execute(userId: number, commentId: number) {
+    const comment = await this.commentRepository.findById(commentId);
+    if (!comment) {
+      throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire introuvable');
+    }
+    await this.commentRepository.unlike(userId, commentId);
+    const updated = await this.commentRepository.findById(commentId, userId);
+    return { likeCount: updated!.likeCount };
   }
 }

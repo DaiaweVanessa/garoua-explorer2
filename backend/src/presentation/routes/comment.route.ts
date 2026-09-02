@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { PrismaCommentRepository } from '@infrastructure/repositories/PrismaCommentRepository';
-import { PrismaCommentLikeRepository } from '@infrastructure/repositories/PrismaCommentLikeRepository';
 import { PrismaPlaceRepository } from '@infrastructure/repositories/PrismaPlaceRepository';
 import {
   ListCommentsUseCase,
@@ -20,15 +19,14 @@ import {
 } from '@presentation/validators/interaction.validators';
 
 const commentRepository = new PrismaCommentRepository();
-const commentLikeRepository = new PrismaCommentLikeRepository();
 const placeRepository = new PrismaPlaceRepository();
 
 const listUseCase = new ListCommentsUseCase(commentRepository);
 const createUseCase = new CreateCommentUseCase(commentRepository, placeRepository);
 const updateUseCase = new UpdateCommentUseCase(commentRepository);
 const deleteUseCase = new DeleteCommentUseCase(commentRepository);
-const likeUseCase = new LikeCommentUseCase(commentLikeRepository, commentRepository);
-const unlikeUseCase = new UnlikeCommentUseCase(commentLikeRepository);
+const likeUseCase = new LikeCommentUseCase(commentRepository);
+const unlikeUseCase = new UnlikeCommentUseCase(commentRepository);
 
 export const commentRouter = Router();
 
@@ -39,7 +37,12 @@ commentRouter.get(
   async (req, res, next) => {
     try {
       const q = (req as any).validatedQuery;
-      const result = await listUseCase.execute(Number(req.params.id), q.page, q.limit, req.auth?.userId);
+      const result = await listUseCase.execute(
+        Number(req.params.id),
+        q.page,
+        q.limit,
+        req.auth?.userId
+      );
       res.json({
         success: true,
         data: result.items,
@@ -60,7 +63,8 @@ commentRouter.post(
       const comment = await createUseCase.execute(
         req.auth!.userId,
         Number(req.params.id),
-        req.body.content
+        req.body.content,
+        req.body.parentId ?? null
       );
       res.status(201).json({ success: true, data: comment });
     } catch (err) {
