@@ -118,3 +118,15 @@ export interface AdminStats {
     place: { id: number; name: string };
   }>;
 }
+
+export type NotificationType = 'COMMENT_REPLY' | 'COMMENT_LIKE' | 'NEW_PLACE' | 'ANNOUNCEMENT';
+
+export interface AppNotification {
+  id: number;
+  userId: number;
+  type: NotificationType;
+  message: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}

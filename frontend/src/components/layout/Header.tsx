@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchCategories } from '@/services/places';
 import { Category } from '@/types';
+import { NotificationBell } from '@/components/NotificationBell';
 
 const navLinks = [
   { to: '/excursions', label: 'Excursions' },
@@ -50,7 +51,6 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {/* Explorer — menu déroulant avec les catégories */}
           <div ref={exploreRef} className="relative">
             <button
               onClick={() => setExploreOpen((v) => !v)}
@@ -100,10 +100,10 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Actions desktop */}
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
             <>
+              <NotificationBell />
               <Link to="/favoris" className="font-sans text-sm font-semibold text-indigo/80 hover:text-indigo">
                 Favoris
               </Link>
@@ -131,31 +131,31 @@ export function Header() {
           )}
         </div>
 
-        {/* Bouton hamburger mobile */}
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-          aria-expanded={menuOpen}
-          className="grid h-10 w-10 place-items-center rounded-lg text-indigo md:hidden"
-        >
-          <div className="flex flex-col gap-1.5">
-            <span
-              className={`h-0.5 w-5 bg-current transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
-            />
-            <span className={`h-0.5 w-5 bg-current transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
-            <span
-              className={`h-0.5 w-5 bg-current transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
-            />
-          </div>
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          {isAuthenticated && <NotificationBell />}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={menuOpen}
+            className="grid h-10 w-10 place-items-center rounded-lg text-indigo"
+          >
+            <div className="flex flex-col gap-1.5">
+              <span
+                className={`h-0.5 w-5 bg-current transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
+              />
+              <span className={`h-0.5 w-5 bg-current transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
+              <span
+                className={`h-0.5 w-5 bg-current transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
+              />
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* Panneau mobile */}
       {menuOpen && (
         <div className="border-t border-indigo/10 bg-sable px-4 pb-4 pt-2 md:hidden">
           <nav className="flex flex-col">
-            {/* Explorer — accordéon mobile */}
             <button
               onClick={() => setMobileExploreOpen((v) => !v)}
               className="flex items-center justify-between rounded-lg px-2 py-3 font-sans text-base font-semibold text-indigo"
