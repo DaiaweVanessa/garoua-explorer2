@@ -62,7 +62,7 @@ export function CommentItem({ comment, placeId, onChanged, isReply = false }: Co
   }
 
   async function handleDelete() {
-    if (!confirm('Supprimer ce commentaire ? Cette action est irréversible.')) return;
+    if (!confirm('Supprimer ce commentaire ? Cette action est irrÃƒÂ©versible.')) return;
     try {
       await deleteComment(comment.id);
       onChanged();
@@ -81,7 +81,7 @@ export function CommentItem({ comment, placeId, onChanged, isReply = false }: Co
       setReplying(false);
       onChanged();
     } catch {
-      alert("Impossible d'envoyer la réponse.");
+      alert("Impossible d'envoyer la rÃƒÂ©ponse.");
     } finally {
       setReplySubmitting(false);
     }
@@ -145,16 +145,16 @@ export function CommentItem({ comment, placeId, onChanged, isReply = false }: Co
             liked ? 'text-laterite' : 'text-ink/50 hover:text-laterite'
           }`}
         >
-          <span aria-hidden>{liked ? '❤️' : '🤍'}</span>
+          <span aria-hidden>{liked ? 'Ã¢ÂÂ¤Ã¯Â¸Â' : 'Ã°Å¸Â¤Â'}</span>
           {likeCount > 0 ? likeCount : ''} J'aime
         </button>
 
-        {!isReply && isAuthenticated && (
+        {isAuthenticated && (
           <button
             onClick={() => setReplying((r) => !r)}
             className="font-semibold text-ink/50 hover:text-indigo"
           >
-            Répondre
+            RÃƒÂ©pondre
           </button>
         )}
 
@@ -177,7 +177,7 @@ export function CommentItem({ comment, placeId, onChanged, isReply = false }: Co
             rows={2}
             value={replyContent}
             onChange={(e) => setReplyContent(e.target.value)}
-            placeholder="Ta réponse..."
+            placeholder="Ta rÃƒÂ©ponse..."
             autoFocus
             className="w-full rounded-xl border border-indigo/15 bg-sable-light px-4 py-3 font-sans text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-laterite"
           />
@@ -187,7 +187,7 @@ export function CommentItem({ comment, placeId, onChanged, isReply = false }: Co
               disabled={replySubmitting || !replyContent.trim()}
               className="btn-primary !px-4 !py-1.5 text-xs disabled:opacity-60"
             >
-              {replySubmitting ? 'Envoi...' : 'Répondre'}
+              {replySubmitting ? 'Envoi...' : 'RÃƒÂ©pondre'}
             </button>
             <button
               type="button"
