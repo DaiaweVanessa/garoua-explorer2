@@ -27,16 +27,13 @@ export class CreateCommentUseCase {
       if (!parent || parent.placeId !== placeId) {
         throw new AppError(404, 'COMMENT_NOT_FOUND', 'Commentaire parent introuvable');
       }
-      if (parent.parentId) {
-        throw new AppError(400, 'INVALID_REPLY', 'Impossible de répondre à une réponse');
-      }
     }
 
     return this.commentRepository.create(userId, placeId, sanitizePlainText(content), parentId ?? null);
   }
 }
 
-// Un commentaire ne peut être modifié/supprimé que par son auteur, ou par un Admin/Modérateur
+// Un commentaire ne peut ÃƒÂªtre modifiÃƒÂ©/supprimÃƒÂ© que par son auteur, ou par un Admin/ModÃƒÂ©rateur
 function assertCanModerate(comment: { userId: number }, requester: { userId: number; role: string }) {
   const isOwner = comment.userId === requester.userId;
   const isModerator = requester.role === 'ADMIN' || requester.role === 'MODERATOR';
