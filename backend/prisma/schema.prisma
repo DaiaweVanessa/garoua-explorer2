@@ -38,6 +38,7 @@ model User {
   commentLikes CommentLike[]
   ratings      Rating[]
   events       Event[]    @relation("EventCreatedBy")
+  notifications Notification[]
 
   @@map("users")
 }
@@ -206,8 +207,8 @@ model TransportOption {
   @@map("transport_options")
 }
 
-// Contenu gÃƒÂ©nÃƒÂ©ral sur Garoua (histoire, culture, gastronomie, climat, quartiers).
-// ConÃƒÂ§ue comme un singleton : une seule ligne (id = 1), gÃƒÂ©rÃƒÂ©e via upsert.
+// Contenu gÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ral sur Garoua (histoire, culture, gastronomie, climat, quartiers).
+// ConÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ue comme un singleton : une seule ligne (id = 1), gÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e via upsert.
 model CityInfo {
   id         Int      @id @default(autoincrement())
   history    String?  @db.Text
@@ -218,4 +219,26 @@ model CityInfo {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("city_info")
+}
+
+enum NotificationType {
+  COMMENT_REPLY
+  COMMENT_LIKE
+  NEW_PLACE
+  ANNOUNCEMENT
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([userId, read])
+  @@map("notifications")
 }

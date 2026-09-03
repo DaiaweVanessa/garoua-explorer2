@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PrismaCommentRepository } from '@infrastructure/repositories/PrismaCommentRepository';
 import { PrismaPlaceRepository } from '@infrastructure/repositories/PrismaPlaceRepository';
+import { PrismaNotificationRepository } from '@infrastructure/repositories/PrismaNotificationRepository';
 import {
   ListCommentsUseCase,
   CreateCommentUseCase,
@@ -20,12 +21,13 @@ import {
 
 const commentRepository = new PrismaCommentRepository();
 const placeRepository = new PrismaPlaceRepository();
+const notificationRepository = new PrismaNotificationRepository();
 
 const listUseCase = new ListCommentsUseCase(commentRepository);
-const createUseCase = new CreateCommentUseCase(commentRepository, placeRepository);
+const createUseCase = new CreateCommentUseCase(commentRepository, placeRepository, notificationRepository);
 const updateUseCase = new UpdateCommentUseCase(commentRepository);
 const deleteUseCase = new DeleteCommentUseCase(commentRepository);
-const likeUseCase = new LikeCommentUseCase(commentRepository);
+const likeUseCase = new LikeCommentUseCase(commentRepository, notificationRepository);
 const unlikeUseCase = new UnlikeCommentUseCase(commentRepository);
 
 export const commentRouter = Router();
@@ -90,7 +92,7 @@ commentRouter.patch(
 commentRouter.delete('/comments/:id', authenticate, async (req, res, next) => {
   try {
     await deleteUseCase.execute(Number(req.params.id), req.auth!);
-    res.json({ success: true, data: { message: 'Commentaire supprimé' } });
+    res.json({ success: true, data: { message: 'Commentaire supprimÃ©' } });
   } catch (err) {
     next(err);
   }
